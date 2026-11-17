@@ -108,3 +108,39 @@ Workers never touch this file.
 ### 2026-11-17T16:14+05:30 Gate status
 
 - There is still no gate. Nothing has landed.
+
+### 2026-11-17T17:25+05:30 Order 6 report and second trial
+
+- Order 6 reported commit `cb3c51d` on `order/6`. One file changed against order 2's commit `1d35ceb`: `crates/core/tests/cases/motion.rs`, 41 lines added and 16 removed, all inside `rotational_error_at_dt_half_dt_quarter_dt_shows_fourth_order`. No helper and no other test changed.
+- The new experiment: torque-free precession of the test body `diag(2, 3, 3)` with initial rate `(6, 8, 0)` rad/s, duration 0.14 s, at 4, 8 and 16 steps, so `|w| * h` is 0.35, 0.175 and 0.0875. Closed form in the test: `q(t) = spin([4, 8, 0], t) * spin([2, 0, 0], t)`. The guard of 100 rounding budgets now applies at each of the three step sizes. The refinement rule is unchanged.
+- Trial by the lead in a scratch worktree `D:\dev\spacebench-wt\_trial6` (the tree of `order/1` plus `crates/core/tests` from `order/6`, never on `main`): 11 unit tests passed and 23 of 23 contract tests passed.
+- Lead measurement in that scratch worktree, with a scratch probe file, of the rebuilt experiment against the order 1 core:
+  - 4 steps: attitude error 6.386332e-6, which is 234,062 times the guard.
+  - 8 steps: attitude error 3.986901e-7, which is 9,741 times the guard, observed order 4.002.
+  - 16 steps: attitude error 2.491088e-8, which is 365 times the guard, observed order 4.000.
+- The scratch worktree and the probe file are deleted. Checked at 17:25 before the first merge: the folders `_trial` and `_trial6` do not exist, `git worktree list` shows only `main` and orders 1, 2, 3 and 6, and no branch holds a file named `lead_probe` or a trial log.
+
+### 2026-11-17T17:25+05:30 Advance acceptance by the person
+
+- The person accepted the three landings in advance: order 3, then orders 2 and 6 together, then order 1. The condition: after each merge the gate result on `main` matches the expected one (red, red, green). If any result differs, the lead stops and shows it.
+- This is an exception to the person's rule of accepting each landing one by one. The person's reason: the trial merge already passed 23 of 23, and the person is away from the screen.
+- The person's further instructions: after the green gate the lead runs the negative control for the hash gate and records it here, then stops. Round two does not start. Nothing is pushed.
+
+### 2026-11-17T17:25+05:30 Receipts before the merges
+
+- Order 3 (`22a478d`):
+  - Diff against the contract lies inside the allowed paths: `crates/wasm/src/lib.rs`, `crates/wasm/src/bin/native_hash.rs`, `scripts/check.ps1`, `scripts/wasm_hash.mjs`.
+  - Main tree: `git status --short` is empty.
+  - Check rerun by the lead in its worktree: `pwsh -NoProfile -File scripts/check.ps1` exits 1 with `FAIL physics` (0 tests), `PASS clippy`, `FAIL determinism`. Both builds succeed, the ABI probe prints `fedcba9876543210` on both sides, and all 15 run pairs are `invalid` on the unimplemented core. This matches the expected red.
+  - Not verified before landing: the success path and the bisect of the determinism gate. The worker tried them only against a mock that it deleted.
+- Orders 2 and 6 (`1d35ceb`, `cb3c51d`), landing together:
+  - Diff against the contract lies inside the allowed path `crates/core/tests/**`: `contract_physics.rs`, `support/mod.rs`, `cases/hashing.rs`, `cases/motion.rs`, `cases/scripted.rs`, `cases/thrusters.rs`.
+  - Main tree: `git status --short` is empty.
+  - Checks rerun by the lead in each worktree: Clippy exits 0; `cargo test --locked -p spacebench-core` exits 101 with 22 failures, all "not yet implemented", and 1 pass, `thrusters::placeholder_table_matches_documented_estimates`, which reads constants only. This matches the expected red.
+  - The contract bound `8 * (N + 4) * EPSILON` is asserted only for the straight push. Spin rate, force-free motion and linear momentum use the test writer's wider budget `64 * (N + 4) * EPSILON * scale`. Spin angle and precession use the refinement rule and no absolute bound.
+- Order 1 (`e0e32b0`):
+  - Diff against the contract lies inside the allowed path: `crates/core/src/lib.rs` only. All 34 `pub` lines are the same as in the contract.
+  - Main tree: `git status --short` is empty.
+  - Checks rerun by the lead in its worktree, all exit 0: Clippy on both targets, the wasm release build of the core, 11 unit tests. No `todo!`, `unimplemented!`, `allow`, `unwrap` or `expect`. No `std` float call; `libm` is used in the quaternion exponential and in the normalisation.
+  - The lead read `step` line by line against the recipe in the spec and found it the same.
+  - Not verified before landing: native against wasm equality.
