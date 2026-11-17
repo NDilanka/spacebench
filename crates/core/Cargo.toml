@@ -1,0 +1,10 @@
+[package]
+name = "spacebench-core"
+version.workspace = true
+edition.workspace = true
+publish.workspace = true
+
+[dependencies]
+# Pinned and with no default features: the "arch" feature swaps in
+# target-specific code, which would break native versus wasm bit equality.
+libm = { version = "=0.2.16", default-features = false }

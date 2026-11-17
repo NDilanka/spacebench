@@ -1,0 +1,13 @@
+[package]
+name = "spacebench-wasm"
+version.workspace = true
+edition.workspace = true
+publish.workspace = true
+
+[lib]
+# cdylib gives the .wasm file. rlib lets the native bin in src/bin share
+# constants with the wasm exports.
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+spacebench-core = { path = "../core" }
