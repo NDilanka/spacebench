@@ -74,3 +74,37 @@ Workers never touch this file.
 ### 2026-11-17T15:40+05:30 Gate status
 
 - There is no gate yet. `scripts/check.ps1` does not exist until order 3 lands.
+
+### 2026-11-17T16:14+05:30 Decisions by the person, and corrections
+
+- The person accepted the rounding bound `8 * (N + 4) * f64::EPSILON` in the `step` doc comment. The lead had changed it from `8 * N` without showing the change first.
+- Rule from the person: the lead shows any change before it is frozen, not after.
+- The person reported a `std` `powi()` call at `crates/core/src/lib.rs:763`. The lead searched every tree and commit and found no `powi`. The file on `order/1` has 759 lines, so no version has that line. Nothing was changed.
+- Correction: the lead first gave the length of `crates/core/src/lib.rs` on `order/1` as 696 lines. That count skipped blank lines. The file has 759 lines.
+
+### 2026-11-17T16:14+05:30 Trial of orders 1 and 2 together, and the judge's verdict
+
+- Trial by the lead in a scratch worktree `D:\dev\spacebench-wt\_trial`, a merge of `order/1` and `order/2` that never touched `main`: 11 unit tests passed, 22 of 23 contract tests passed, 1 failed.
+- The failing test is `motion::rotational_error_at_dt_half_dt_quarter_dt_shows_fourth_order`. It failed on its own guard: "rotation order experiment is rounding dominated: [4.44e-16, 1.11e-16, 1.11e-15]".
+- The lead measured with a scratch test file `lead_probe.rs` in that worktree. Steady spin `w = (0, 0, 2)`: attitude errors 4.44e-16, 1.11e-16, 1.11e-15, 8.88e-16, which is rounding and shows no order. Torque-free precession with rates (1.3, -0.8, 1.1): attitude errors 6.74e-6, 4.22e-7, 2.63e-8, 1.65e-9, 1.03e-10 at 16, 32, 64, 128 and 256 steps, order 4.00 at every halving.
+- The scratch worktree and `lead_probe.rs` were a measurement. Both are deleted and neither lands. Checked at 16:14: the folder is gone, `git worktree list` shows only `main` and orders 1 to 3, and no branch holds a file named `lead_probe`.
+- Verdict by `pv-opus-high`, read-only: the test is wrong and the core is right. On a steady spin about a principal axis the gyroscopic term and the coning term are both zero, so a correct method is exact there and only rounding is left. The fix belongs on `crates/core/tests`.
+- The person's rule for the judge: an error near rounding means the test is fixed; a clean order of 1 or 2 means the core is wrong. The person wrote "1e-5"; the lead and the judge read it as 1e-15 and the lead said so.
+- Note from the judge, not acted on: the `step` doc says an order is measurable roughly for `|w| * dt` between 0.01 and 0.2. That is necessary but not enough, because the rate vector must also change during the run. Any change to that doc wording is shown to the person first.
+
+### 2026-11-17T16:14+05:30 Order 6: fix the rotation-order test
+
+- Droid `pv-sol-high`, by the same exception as order 2. Branch `order/6`, cut from order 2's commit `1d35ceb`. Worktree `D:\dev\spacebench-wt\order-6`.
+- The path rule is bent on purpose, by the person's decision: order 6 shares `crates/core/tests/**` with order 2, which has not landed. Order 2's worker has finished and writes nothing more, so the path still has one writer. The reason is time.
+- Orders 2 and 6 land together.
+- Intent: `rotational_error_at_dt_half_dt_quarter_dt_shows_fourth_order` measures the order on a motion whose body rate vector changes direction with time, against a closed form. By the person's instruction the error is well above rounding at every step size used: a fast spin or larger steps. The rounding guard stays and covers every step size. The refinement rule `E(h/2) <= E(h) / 2^3.5 + rounding` stays. No other test changes.
+- Allowed paths: `crates/core/tests/**`.
+- Told: the contract; that a steady spin about a fixed axis cannot show an order because a correct method can be exact there; that the judge ruled the experiment must change; a step window set by the lead, `|w| * h` about 0.3 to 0.4 at the largest step and halved twice.
+- Not told: the integrator recipe, the builder's code, any measured number, which tests passed in the trial.
+- Checks: the same three as order 2.
+- Expected result before landing: RED, as for order 2. Clippy is green, the tests compile, and every failing test fails with "not yet implemented".
+- After the report the lead reruns the trial in a scratch worktree, deletes it, and gives the person the count before any landing.
+
+### 2026-11-17T16:14+05:30 Gate status
+
+- There is still no gate. Nothing has landed.
