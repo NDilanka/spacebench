@@ -374,27 +374,52 @@ fn full_inertia_tensor_is_covariant_under_body_frame_rotation() {
 
 #[test]
 fn rotational_error_at_dt_half_dt_quarter_dt_shows_fourth_order() {
-    // Constant principal spin has exact q=q0*exp((0,w)T/2).
-    // At fixed T, fourth-order error ratios tend to 16. The three h values
-    // give |w|h=.16,.08,.04; allow half an order for finite-h terms:
-    // E(h/2)<=E(h)/2^3.5 + rounding. Higher orders are also acceptable.
-    // Require truncation error >100 rounding budgets at the coarsest h;
-    // otherwise this experiment cannot claim to measure an order.
-    let rate = [0.0, 0.0, 2.0];
+    // Torque-free I=diag(A,B,B), A=2, B=3: Euler gives p'=0,
+    // b'=k*c, c'=-k*b, k=(B-A)*p/B=2. Thus with w0=[6,8,0],
+    // w(t)=[6,8*cos(2t),-8*sin(2t)]: its body direction changes.
+    // Derive q=exp((0,u)t/2)*exp((0,k*ex)t/2), u=[A*p/B,8,0]=[4,8,0]:
+    // q^-1*q'=(0,Rx(-k*t)*u+k*ex)/2=(0,w(t))/2, and q(0)=1.
+    // This independently checks symmetric_solution's formula and signs.
+    //
+    // The person's instruction is to use a fast spin or larger steps:
+    // |w|h=.35 deliberately exceeds step's roughly .01--.2 guidance at
+    // the coarsest mesh. T=.14 and N=4,8,16 keep accumulated spin and
+    // the step-count rounding budget small.
+    //
+    // A-priori planning estimate, not a bound or measured error:
+    // E ~ C*(|w|h)^4*|w|T, |w|=10, |w|T=1.4, assume C=1e-5.
+    // This is pessimistically ~50x below the quaternion RK4 phase
+    // coefficient 1/1920 (arg R(ix)=x-x^5/120+O(x^7), x=|w|h/2),
+    // allowing smaller constants/cancellation without knowing the method.
+    // No nonzero error constant is promised; the measured guard is decisive.
+    // rounding(N,1+|w|T)=64*(N+4)*eps*2.4 gives:
+    // N    h        |w|h    E estimate    rounding       E/rounding
+    // 4    .035     .35     2.100875e-7   2.728484e-13   7.699788e5
+    // 8    .0175    .175    1.313047e-8   4.092726e-13   3.208245e4
+    // 16   .00875   .0875   8.206543e-10  6.821210e-13   1.203092e3
+    // Even the finest estimate clears the 100-budget guard by ~12x.
+    // Every mesh must clear that guard or this experiment claims no order.
+    // Keep both refinement rules E(h/2)<=E(h)/2^3.5+rounding unchanged.
+    let duration = 0.14;
+    let counts = [4, 8, 16];
+    let rate = [6.0, 8.0, 0.0];
     let initial = state([0.0; 3], [0.0; 3], IDENTITY, rate);
-    let exact = spin(rate, DURATION);
+    let (_, exact) = symmetric_solution(&initial, duration);
     let mut errors = [0.0; 3];
-    for (level, count) in COUNTS.into_iter().enumerate() {
-        let actual = integrate(&BODY, initial, &ZERO_WRENCH, DURATION, count);
+    for (level, count) in counts.into_iter().enumerate() {
+        let actual = integrate(&BODY, initial, &ZERO_WRENCH, duration, count);
         errors[level] = attitude_error(actual.attitude, exact);
     }
-    let scale = 1.0 + norm(rate) * DURATION;
-    assert!(
-        errors[0] > 100.0 * rounding(COUNTS[0], scale),
-        "rotation order experiment is rounding dominated: {errors:?}"
-    );
+    let scale = 1.0 + norm(rate) * duration;
+    let budgets = counts.map(|count| rounding(count, scale));
+    for level in 0..3 {
+        assert!(
+            errors[level] > 100.0 * budgets[level],
+            "rotation order experiment is rounding dominated: errors={errors:?}, budgets={budgets:?}, level={level}"
+        );
+    }
     for level in 0..2 {
-        let tolerance = errors[level] / libm::sqrt(128.0) + rounding(COUNTS[level + 1], scale);
+        let tolerance = errors[level] / libm::sqrt(128.0) + rounding(counts[level + 1], scale);
         assert!(
             errors[level + 1] <= tolerance,
             "rotation needs order >=3.5: {errors:?}"
