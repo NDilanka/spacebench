@@ -154,3 +154,13 @@ Workers never touch this file.
   - `FAIL determinism`: both builds exit 0; the ABI probe passes on both sides (`probe native=True node=True`); all 15 run pairs are `native=FAIL node=FAIL -> invalid` (native exit code 101, Node exit code 1) on the unimplemented core.
 - This is the expected red. `git status --short` on `main` is empty after the run.
 - Gate status: the gate exists and is red.
+
+### 2026-11-17T17:27+05:30 Orders 2 and 6 landed together: gate on `main`
+
+- Merge commit `5089150`, `--no-ff`, of `order/6` into `main`. `order/6` contains order 2's commit `1d35ceb`, so one merge lands both.
+- `pwsh -NoProfile -File scripts/check.ps1` on `main`: exit code 1.
+  - `FAIL physics`: `cargo test --locked -p spacebench-core` exits 101 with `1 passed; 22 failed`. All 22 failures are "not yet implemented". The one pass is `thrusters::placeholder_table_matches_documented_estimates`.
+  - `PASS clippy`: both Clippy commands exit 0, with the test files included by `--all-targets`.
+  - `FAIL determinism`: both builds exit 0; the ABI probe passes on both sides; all 15 run pairs are `invalid` on the unimplemented core.
+- This is the expected red. `git status --short` on `main` is empty after the run.
+- Gate status after orders 2 and 6: red.
