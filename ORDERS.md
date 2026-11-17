@@ -178,3 +178,24 @@ Workers never touch this file.
   - These hash values are a record of this run. The gate compares the two builds live and pins none of them.
 - This is the expected green. `git status --short` on `main` is empty after the run.
 - Gate status after order 1: green.
+
+### 2026-11-17T17:29+05:30 Negative control for the hash gate
+
+- Run by the lead after the green gate, in a scratch copy outside the repository: `D:\dev\spacebench-wt\_negctl`, made with `git archive` from `main` at `0c3538a`. It was not a git repository.
+- The only change in the copy, in `crates/core/src/lib.rs`: `extern crate std;` added after the crate attributes, and in `expq` `libm::sin(half)` became `f64::sin(half)` and `libm::cos(half)` became `f64::cos(half)`. Both `libm::sqrt` calls were left.
+- First attempt, not a result: the lead put `extern crate std;` between two crate attributes, so nothing compiled and every gate failed for that reason. The lead moved the line and ran again.
+- Second attempt, `pwsh -NoProfile -File scripts/check.ps1` in the copy: exit code 1.
+  - `PASS physics`: 34 tests passed. The closed-form tests do not see the change.
+  - `FAIL clippy`: "use of a disallowed method `f64::sin`" and "use of a disallowed method `f64::cos`" on both targets.
+  - `FAIL determinism`: both builds exit 0 and the ABI probe passes on both sides. 8 of 15 run pairs differ.
+    - seed 1: ticks 0, 1 and 7 match; ticks 1000 differ (native `96a468dab4f3aa8d`, Node `0599a4b85f45a1dd`); ticks 200000 differ. Bisect: first differing tick count 44.
+    - seed 2: ticks 0, 1 and 7 match; ticks 1000 differ (native `6d77bf68e7fe402d`, Node `6fc165b99273bfb8`); ticks 200000 differ. Bisect: first differing tick count 23.
+    - seed 3735928559: ticks 0 match; ticks 1, 7, 1000 and 200000 differ. Bisect: first differing tick count 1.
+  - On the Node side all 15 hashes equal the ones from the green run on `main`. Only the native side moved, as in the `atan2` probe in `AGENTS.md`.
+- Result: red, as expected. The hash gate catches `std` sine and cosine, and its bisect ran for real for the first time. `atan2` was not needed.
+- The scratch copy and the lead's gate logs are deleted. Nothing from the copy is in the repository.
+
+### 2026-11-17T17:29+05:30 Stop, by the person's instruction
+
+- Round two has not started: no core review (order 4), no review of the test derivations, no chart (order 5). `docs/spin-errors.svg` does not exist.
+- The worktrees of orders 1, 2, 3 and 6 are still on `D:`. Nothing is pushed.
