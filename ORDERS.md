@@ -144,3 +144,13 @@ Workers never touch this file.
   - Checks rerun by the lead in its worktree, all exit 0: Clippy on both targets, the wasm release build of the core, 11 unit tests. No `todo!`, `unimplemented!`, `allow`, `unwrap` or `expect`. No `std` float call; `libm` is used in the quaternion exponential and in the normalisation.
   - The lead read `step` line by line against the recipe in the spec and found it the same.
   - Not verified before landing: native against wasm equality.
+
+### 2026-11-17T17:27+05:30 Order 3 landed: gate on `main`
+
+- Merge commit `024008a`, `--no-ff`, of `order/3` into `main`.
+- `pwsh -NoProfile -File scripts/check.ps1` on `main`: exit code 1.
+  - `FAIL physics`: `cargo test --locked -p spacebench-core` exits 0 but 0 tests passed.
+  - `PASS clippy`: both Clippy commands exit 0.
+  - `FAIL determinism`: both builds exit 0; the ABI probe passes on both sides (`probe native=True node=True`); all 15 run pairs are `native=FAIL node=FAIL -> invalid` (native exit code 101, Node exit code 1) on the unimplemented core.
+- This is the expected red. `git status --short` on `main` is empty after the run.
+- Gate status: the gate exists and is red.
