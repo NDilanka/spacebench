@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="en" data-theme="dark" data-sim="dock">
+<head>
+<meta charset="utf-8">
+<title>SpaceBench banner</title>
+<link rel="stylesheet" href="../tokens/tokens.css">
+<link rel="stylesheet" href="../css/brand.css">
+<link rel="stylesheet" href="templates.css">
+<script src="../js/sb-logo.js"></script>
+<script src="../js/sb-graphics.js"></script>
+<script src="template.js"></script>
+</head>
+<body class="sb t t-banner">
+<!-- 1500 x 500. Keep the left 500 px quiet: profile pictures overlap it. -->
+<div class="limb" id="limb"></div>
+<div class="sb-meta" style="position:relative"><span id="m1"></span><span>Six axes · One attempt · 30 hidden seeds</span><span>Specimen signature</span></div>
+<div class="mid grow" style="align-items:flex-end;padding-bottom:110px">
+  <span class="lk" data-sb-logo="lockup" data-follow-sim></span>
+  <div id="sig" style="width:760px"></div>
+</div>
+<script>
+(function () {
+  var P = SBParams, G = SBGraphics;
+  document.getElementById('m1').textContent = P.simName;
+  document.getElementById('limb').innerHTML = G.limb({ width: 1500, height: 250, count: 3800, top: 120, radius: 3200, seed: 7 });
+  document.getElementById('sig').innerHTML = G.flightSignature(G.specimenFlight(421, 3), { width: 760, height: 54, labels: false });
+  P.done();
+})();
+</script>
+</body>
+</html>

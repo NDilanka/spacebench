@@ -1,0 +1,297 @@
+<!doctype html>
+<html lang="en" data-theme="light" data-sim="dock">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SpaceBench brand standard</title>
+<link rel="icon" href="logo/svg/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="tokens/tokens.css">
+<link rel="stylesheet" href="css/brand.css">
+<link rel="stylesheet" href="css/book.css">
+</head>
+<body class="sb book">
+
+<aside class="rail">
+  <a class="rail__logo" href="#cover" data-sb-logo="lockup" aria-label="SpaceBench"></a>
+  <nav id="nav" aria-label="Sections"></nav>
+  <div class="rail__ctl">
+    <div class="sb-micro sb-dim">Ground</div>
+    <div class="sb-tabs" id="theme-tabs" role="group" aria-label="Ground">
+      <button data-v="light" aria-pressed="true">Paper</button><button data-v="dark" aria-pressed="false">Ink</button>
+    </div>
+    <div class="sb-micro sb-dim" style="margin-top:8px">Simulation</div>
+    <div class="sb-tabs" id="sim-tabs" role="group" aria-label="Simulation">
+      <button data-v="parent" aria-pressed="false">Parent</button><button data-v="dock" aria-pressed="true">Dock</button><button data-v="landing" aria-pressed="false">Landing</button>
+    </div>
+  </div>
+  <div class="rail__foot sb-micro"><span>Brand standard, Rev. A</span><span>2026-11-15</span></div>
+</aside>
+
+<main>
+
+<!-- 00 -->
+<section class="sheet cover" id="cover" data-theme="dark" data-n="00" data-name="Cover">
+  <div class="cover__mid">
+    <span data-sb-logo="lockup"></span>
+    <h1>Nothing invented. <span class="sb-tone">Everything measured.</span></h1>
+    <p class="sb-lead">The brand standard for SpaceBench, a benchmark family that tests language models on closed-loop control of spacecraft in simulators.</p>
+  </div>
+  <div class="cover__limb" data-sb="limb" data-seed="421" data-opts='{"width":1600,"height":440,"count":5200,"top":50,"radius":3600}'></div>
+  <div class="cover__foot">
+    <div class="sig">
+      <div data-sb="signature" data-seed="421" data-tier="3" data-opts='{"width":760,"height":92}'></div>
+      <div class="sb-micro sb-dim sb-bracket">Flight signature. Specimen. Tier 3, seed 0421. One bar per thruster pulse</div>
+    </div>
+    <table class="sb-spec spec">
+      <tr><th>Document</th><td class="num">SB-BS</td></tr>
+      <tr><th>Revision</th><td class="num">A</td></tr>
+      <tr><th>Applies to</th><td class="num">Dock, Landing</td></tr>
+      <tr><th>Grounds</th><td class="num">Paper, Ink</td></tr>
+    </table>
+  </div>
+</section>
+
+<!-- 01 -->
+<section class="sheet" id="principles" data-n="01" data-name="Principles">
+  <div class="sheet__title"><h2>Six rules</h2><p>The references behind this identity borrow the look of engineering documents. <b>SpaceBench has the real quantities</b>, so the identity uses them instead of imitating them.</p></div>
+  <div class="rules">
+    <div><span class="n">01</span><div><h3>Derived, <span class="sb-tone">not decorated.</span></h3><p>Every graphic is drawn from a simulator quantity: a pulse, a range, a tolerance, a seed. If a shape has no source, remove it.</p></div></div>
+    <div><span class="n">02</span><div><h3>One accent, <span class="sb-tone">one meaning.</span></h3><p>The parent brand is black and white. Each simulation owns one colour. On a page the accent marks the single thing the reader must find.</p></div></div>
+    <div><span class="n">03</span><div><h3>Paper and ink <span class="sb-tone">are equals.</span></h3><p>Documents, tables and the paper live on off-white. Flight and replays live on near-black. Every asset ships for both grounds.</p></div></div>
+    <div><span class="n">04</span><div><h3>A unit <span class="sb-tone">on every number.</span></h3><p>0.08 m/s, 4.0 deg, 27 of 30 seeds. A number without a unit, a sample size or a source does not go on the page.</p></div></div>
+    <div><span class="n">05</span><div><h3>Status is a shape, <span class="sb-tone">never a hue.</span></h3><p>Pass is a solid dot. Fail is a ring. The page must still read on a black-and-white printer and for colour-blind readers.</p></div></div>
+    <div><span class="n">06</span><div><h3>Specimen <span class="sb-tone">until flown.</span></h3><p>Sample data carries the SPECIMEN stamp. Only runs we perform appear as results, and placeholder model names never look real.</p></div></div>
+  </div>
+</section>
+
+<!-- 02 -->
+<section class="sheet" id="logo" data-n="02" data-name="Logo">
+  <div class="sheet__title"><h2>Logo</h2><p>The mark is the surveyor's bench mark: <b>a datum line with a broad arrow pointing at it</b>. Surveyors cut it into stone to fix a known height that every later measurement refers to. Here the line is the docking plane, the arrow is the approach, and the gap is the last distance before contact.</p></div>
+  <div class="grid">
+    <div class="panel c7"><div class="cap"><b>Construction</b><span>8 × 8 modules. 1 module = 15 units</span></div><div class="fill" id="construction"></div></div>
+    <div class="c5 stack" style="align-content:stretch">
+      <div class="panel" style="flex:1"><div class="cap"><b>Rules of the drawing</b><span>geometry.json</span></div>
+        <table class="sb-spec">
+          <tr><th>Canvas</th><td>8 × 8 modules</td><td class="num">120 × 120</td></tr>
+          <tr><th>Stroke</th><td>Datum, stem and legs</td><td class="num">1 module</td></tr>
+          <tr><th>Clearance</th><td>Built into the canvas</td><td class="num">1 module</td></tr>
+          <tr><th>Contact gap</th><td>Datum to arrow tip</td><td class="num">½ module</td></tr>
+          <tr><th>Legs</th><td>Outer edges aim at the datum centre</td><td class="num">6 modules wide</td></tr>
+          <tr><th>Corners</th><td>No rounding</td><td class="num">0</td></tr>
+        </table>
+        <p class="note">The gap never closes. A closed gap is a collision, and the benchmark scores first contact, not impact.</p>
+      </div>
+      <div class="panel panel--board"><div class="cap"><b>Mark on a dot matrix</b><span>24 × 24 cells</span></div><div style="width:190px;margin:auto" data-sb="dotmark" data-follow-sim></div></div>
+    </div>
+  </div>
+
+  <div class="sub"><h3>Orientation system</h3><span class="sb-label sb-dim">The mark turns to each simulation's approach axis</span></div>
+  <div class="grid">
+    <div class="panel orient c3" data-sim="parent"><div class="cap"><b>Parent</b><span>0°</span></div><div class="fill"><span data-sb-logo="mark"></span></div><p class="note"><b>SpaceBench.</b> The arrow rises to the datum. Black and white only.</p></div>
+    <div class="panel orient c3" data-sim="dock"><div class="cap"><b>Dock</b><span>90°</span></div><div class="fill"><span data-sb-logo="mark" data-sim="dock"></span></div><p class="note"><b>Ion violet.</b> The capsule closes sideways on the port plane.</p></div>
+    <div class="panel orient c3" data-sim="landing"><div class="cap"><b>Landing</b><span>180°</span></div><div class="fill"><span data-sb-logo="mark" data-sim="landing"></span></div><p class="note"><b>Burn orange.</b> The booster descends to the pad.</p></div>
+    <div class="panel panel--line orient orient--free c3"><div class="cap"><b>Unassigned</b><span>270°</span></div><div class="fill"><span data-sb-logo="mark" style="transform:rotate(270deg)"></span></div><p class="note">The next simulation takes a free axis and one colour from the reserve list. Diagonal axes come after the four cardinal ones.</p></div>
+  </div>
+
+  <div class="sub"><h3>Lockups</h3><span class="sb-label sb-dim">Second tone names the thing: gray for Bench, accent for a simulation</span></div>
+  <div class="grid" id="lockups"></div>
+
+  <div class="sub"><h3>Size, space and icons</h3></div>
+  <div class="grid">
+    <div class="panel c5"><div class="cap"><b>Minimum size</b><span>Canvas height in px</span></div><div class="fill"><div class="sizes" id="sizes"></div></div><p class="note">The mark holds down to a <b>16 px</b> canvas. The lockup holds down to <b>16 px</b> tall. Below that, use the mark alone.</p></div>
+    <div class="panel c7"><div class="cap"><b>App icons</b><span>logo/svg, logo/png</span></div><div class="fill"><div class="appicons"><img src="logo/svg/spacebench-appicon-ink.svg" alt="Parent icon on ink"><img src="logo/svg/spacebench-appicon-paper.svg" alt="Parent icon on paper"><img src="logo/svg/spacebench-dock-appicon.svg" alt="Dock icon"><img src="logo/svg/spacebench-landing-appicon.svg" alt="Landing icon"></div></div><p class="note">A full accent field is allowed here and on simulation posters only. The canvas already holds one module of clearance, so never crop it; keep a second module free around a lockup in layouts.</p></div>
+  </div>
+
+  <div class="sub"><h3>Misuse</h3><span class="sb-label sb-dim">Six ways to break it</span></div>
+  <div class="grid" id="misuse"></div>
+</section>
+
+<!-- 03 -->
+<section class="sheet" id="colour" data-n="03" data-name="Colour">
+  <div class="sheet__title"><h2>Colour</h2><p>A warm-neutral ladder from card white to void carries the whole brand. <b>Colour enters only with a simulation</b>, one accent each, and it is never mixed with another accent on the same page.</p></div>
+  <div class="ladder" id="ladder"></div>
+
+  <div class="sub"><h3>Accent registry</h3><span class="sb-label sb-dim">One per simulation</span></div>
+  <div class="grid">
+    <div class="c6 stack"><div class="sb-meta"><span>Dock · Ion violet</span><span>500 on paper · 400 on ink</span></div><div class="ladder ladder--short" id="violet"></div></div>
+    <div class="c6 stack"><div class="sb-meta"><span>Landing · Burn orange</span><span>500 on paper · 400 on ink</span></div><div class="ladder ladder--short" id="orange"></div></div>
+    <div class="panel c6"><div class="cap"><b>Proportion on a document</b><span>By area</span></div>
+      <div class="prop"><div style="flex:80;background:var(--sb-bg)">Ground 80</div><div style="flex:14;background:var(--sb-fg);color:var(--sb-bg)">Ink 14</div><div style="flex:6;background:var(--sb-accent);color:var(--sb-accent-contrast)">6</div></div>
+      <p class="note">Keep the accent under a tenth of the page. If two things are accented, neither is. Burn orange is too light for text on paper, so text uses <b>accent-text</b>, a darker step picked per ground.</p></div>
+    <div class="panel c6"><div class="cap"><b>Reserve</b><span>Unassigned. Do not use yet</span></div><div class="row" id="reserve"></div>
+      <p class="note">Listed so a later simulation picks a hue that stays apart from violet and orange. One functional colour exists outside the brand: <b>alert</b>, used only in the flight view for a keep-out or collision violation.</p></div>
+  </div>
+
+  <div class="sub"><h3>Roles</h3><span class="sb-label sb-dim">Use roles in code, never raw steps</span></div>
+  <div class="grid">
+    <div class="panel c6"><div class="cap"><b>Semantic tokens</b><span>Paper · Ink</span></div><div id="roles"></div></div>
+    <div class="panel c6"><div class="cap"><b>Contrast, computed</b><span>WCAG 2 ratio</span></div><table class="sb-spec" id="contrast"></table><p class="note">Text needs 4.5. Display type and graphics need 3.0. The third tone is for display sizes only.</p></div>
+  </div>
+</section>
+
+<!-- 04 -->
+<section class="sheet" id="type" data-n="04" data-name="Typography">
+  <div class="sheet__title"><h2>Typography</h2><p>Three voices. <b>Geist</b> speaks, <b>Geist Mono</b> labels, and <b>SB Matrix</b>, a dot-matrix face drawn for this brand, reads out measured values and nothing else.</p></div>
+  <div class="grid">
+    <div class="panel c4"><div class="cap"><b>Geist</b><span>400 · 500 · 600</span></div><div class="spec-aa">Aa</div><div class="sb-h2">Approach, hold, <span class="sb-tone">contact.</span></div><p class="note">Headlines at 600 with tracking from −0.03 to −0.055 em. Body at 400. Open licence (SIL OFL 1.1).</p></div>
+    <div class="panel c4"><div class="cap"><b>Geist Mono</b><span>400 · 500</span></div><div class="spec-aa" style="font-family:var(--sb-font-mono);font-weight:400;letter-spacing:-.04em">Rf</div><div class="sb-label sb-bracket" style="font-size:16px">Ref. SBD-T3-0421</div><p class="note">Capitals, 0.07 em tracking, 11 px. Labels, identifiers, table figures and code. Never for sentences.</p></div>
+    <div class="panel c4"><div class="cap"><b>SB Matrix</b><span>5 × 7 dots</span></div><div class="sb-readout-xl" style="font-size:118px;line-height:1.1">0.08</div><div class="sb-readout-sm">0123456789 ±×°%→</div><p class="note">Capitals, figures and 37 symbols on a 5 × 7 dot cell. Only for values that came out of the simulator or the scorer.</p></div>
+  </div>
+  <div class="sub"><h3>Scale</h3><span class="sb-label sb-dim">Token · size / leading / tracking</span></div>
+  <div id="scale"></div>
+  <div class="sub"><h3>Setting rules</h3></div>
+  <div class="grid">
+    <div class="panel c6"><div class="cap"><b>Two-tone sentence</b><span>.sb-tone</span></div>
+      <div class="ex"><div class="sb-h2">Six axes. <span class="sb-tone">One attempt.</span></div><p class="note">Statement in ink, qualifier in the third tone. Display sizes only.</p></div>
+      <div class="ex"><div class="sb-h2">Contact inside <span class="sb-accent">0.10 m.</span></div><p class="note">The last phrase may take the accent when it is the one thing to find.</p></div>
+      <div class="ex"><div class="sb-h3"><span class="sb-tone">Hold at 30 m.</span> Then close at 0.08 m/s.</div><p class="note">Gray lead, ink continuation, in one line.</p></div>
+    </div>
+    <div class="panel c6"><div class="cap"><b>Labels and header rows</b><span>.sb-label · .sb-meta</span></div>
+      <div class="ex"><div class="sb-meta sb-meta--rule"><span>SpaceBench Dock</span><span>Tier 3 · Seed 0421</span><span>03/06</span><span>Ref. SBD-T3-0421</span></div><p class="note">Every sheet opens with a header row of three or four facts: what, which, where in the set, and its reference.</p></div>
+      <div class="ex"><div class="row"><span class="sb-label sb-bracket">Pilot display</span><span class="sb-tag">Approach chart</span><span class="sb-chip">Tier 3</span><span class="sb-specimen">Specimen. Not a result</span></div><p class="note">Brackets caption a figure. A block cursor opens a section. A pill is a filter or a state. The dashed stamp marks sample data.</p></div>
+      <div class="ex"><div class="sb-h3">0.08 m/s · 4.0° · 27 of 30 · T+04:12</div><p class="note">A space between number and unit. Degrees take the sign in prose and "deg" in tables. Counts read "k of n". Times read T+mm:ss.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- 05 -->
+<section class="sheet" id="voice" data-n="05" data-name="Voice">
+  <div class="sheet__title"><h2>Voice</h2><p><b>A flight controller, not a marketer.</b> Short declarative sentences. Say what was measured, how many times, and against what limit. Then stop.</p></div>
+  <table class="dd">
+    <thead><tr><th>Write</th><th>Not</th><th>Why</th></tr></thead>
+    <tbody>
+      <tr><td>22 of 30 seeds docked (73%, 95% interval 56 to 86).</td><td>Crushes six-axis docking.</td><td>A rate without its sample and interval is not a result.</td></tr>
+      <tr><td>Contact at 0.08 m/s, inside the 0.05 to 0.10 m/s limit.</td><td>A perfect docking.</td><td>Name the quantity and the limit it was judged against.</td></tr>
+      <tr><td>A Dragon-class vehicle built from public parameters.</td><td>An exact Crew Dragon simulation.</td><td>"Exact" is reserved for the day real vehicle data arrives.</td></tr>
+      <tr><td>The pass rule is the docking standard's reference contact conditions.</td><td>Dragon's flight limits.</td><td>They are IDSS Rev F design conditions, not verified flight limits.</td></tr>
+      <tr><td>A benchmark for six-axis spacecraft piloting by language models.</td><td>The first LLM docking benchmark.</td><td>Earlier work exists. We cite it.</td></tr>
+      <tr><td>Cost per episode, per model.</td><td>Cheapest provider.</td><td>The leaderboard does not rank providers by price.</td></tr>
+    </tbody>
+  </table>
+  <div class="sub"><h3>Words and formats</h3></div>
+  <div class="grid">
+    <div class="panel c4"><div class="cap"><b>Use</b><span>The simulator's own nouns</span></div><div class="row" id="words-yes"></div><p class="note">These are the nouns of the action model and the scenario. Use them the same way every time.</p></div>
+    <div class="panel c4"><div class="cap"><b>Avoid</b><span>Claims without a number</span></div><div class="row" id="words-no"></div><p class="note">If the sentence still works after the word is deleted, delete it.</p></div>
+    <div class="panel c4"><div class="cap"><b>Identifiers</b><span>Mono capitals</span></div>
+      <table class="sb-spec">
+        <tr><th>Flight</th><td class="num">SBD-T3-0421</td></tr>
+        <tr><th>Tier</th><td class="num">T1 … T6</td></tr>
+        <tr><th>Elapsed</th><td class="num">T+04:12</td></tr>
+        <tr><th>Date</th><td class="num">2026-11-15</td></tr>
+        <tr><th>Document</th><td class="num">SB-BS-05 REV. A</td></tr>
+      </table>
+      <p class="note">SB, then the simulation letter (D for Dock, L for Landing), the tier, and the four-digit seed.</p></div>
+  </div>
+</section>
+
+<!-- 06 -->
+<section class="sheet" id="devices" data-n="06" data-name="Graphic devices">
+  <div class="sheet__title"><h2>Graphic devices</h2><p>Ten drawings, each generated from scenario constants or an action log by <b>js/sb-graphics.js</b>. The same seed gives the same picture on every machine. Until real replays exist they run on a labelled specimen flight.</p></div>
+  <div class="grid">
+    <div class="panel c12"><div class="cap"><b>Flight signature</b><span class="sb-specimen">Specimen</span></div>
+      <div data-sb="signature" data-seed="421" data-tier="3" data-opts='{"width":1200,"height":110}'></div>
+      <div class="legend"><div><b>One bar, one pulse</b>Its position is the time the thruster fired.</div><div><b>Width</b>Pulse length on a log scale, from the 0.035 s minimum upward.</div><div><b>Height</b>Approach axis is full height. Cross axes 82%. Rotations 60%.</div><div><b>Accent bars</b>Hold points at 250, 30 and 10 m, then contact.</div></div></div>
+    <div class="panel c6"><div class="cap"><b>Signatures differ by flight</b><span>T1 · T4 · T6</span></div>
+      <div data-sb="signature" data-seed="12" data-tier="1" data-opts='{"height":56,"labels":false}'></div>
+      <div data-sb="signature" data-seed="88" data-tier="4" data-opts='{"height":56,"labels":false}'></div>
+      <div data-sb="signature" data-seed="301" data-tier="6" data-opts='{"height":56,"labels":false}'></div>
+      <p class="note">Use it wherever a run is named: replay cards, share images, the footer of a flight sheet. It replaces stock imagery.</p></div>
+    <div class="panel c6"><div class="cap"><b>Approach arcs</b><span>Every approach ends at the same point</span></div><div data-sb="arcs" data-opts='{"height":330}'></div><p class="note">Arcs start at the hold points and the 200 m keep-out sphere, on a log range scale, and land on the port. For a failed run, arcs beyond the point reached turn gray.</p></div>
+    <div class="panel c8"><div class="cap"><b>Approach chart</b><span class="sb-specimen">Specimen</span></div><div data-sb="chart" data-seed="421" data-tier="3" data-opts='{"width":820,"height":300}'></div><p class="note">One flight in side view. The path is the only accented line. It ends on the datum bar, the same bar as in the logo.</p></div>
+    <div class="panel c4"><div class="cap"><b>Range scale</b><span>400 m to contact</span></div><div class="fill"><div style="width:100%" data-sb="scale" data-opts='{"value":62,"width":360}'></div></div><p class="note">A log ruler. Holds are the long ticks. Use it as a progress bar, a slider and a stepper.</p></div>
+    <div class="panel c4"><div class="cap"><b>Orbit</b><span>Tier 6</span></div><div data-sb="orbit"></div><p class="note">Target on the solid ellipse, chaser on the dotted one. Reserved for content about orbital dynamics.</p></div>
+    <div class="panel c4"><div class="cap"><b>Docking interface</b><span>12 hooks · 3 petals</span></div><div data-sb="ring" data-opts='{"highlight":2}'></div><p class="note">The interface along the approach axis. For the capture and latching stage that follows first contact.</p></div>
+    <div class="panel c4"><div class="cap"><b>Error dial</b><span>Value against tolerance</span></div><div data-sb="dial" data-opts='{"value":2.4,"limit":4}'></div><p class="note">The accent band is the tolerance (here ±4.0 deg). The pointer is the measured error.</p></div>
+    <div class="panel c4"><div class="cap"><b>Thruster set</b><span>Tiers 4 and 5</span></div><div data-sb="thrusters" data-opts='{"stuck":[3],"failed":[9,12]}'></div><p class="note">Sixteen thrusters along the approach axis. A stuck thruster is the accent dot with a plume. A failed one is a ring.</p></div>
+    <div class="panel c8"><div class="cap"><b>How to choose</b><span>One device per sheet</span></div><table class="sb-spec"><tr><th>A run</th><td>Flight signature, approach chart</td></tr><tr><th>The task</th><td>Approach arcs, range scale</td></tr><tr><th>A tolerance</th><td>Error dial</td></tr><tr><th>Hardware</th><td>Docking interface, thruster set</td></tr><tr><th>Orbital dynamics</th><td>Orbit</td></tr><tr><th>Atmosphere, covers</th><td>Limb, on ink only</td></tr></table></div>
+    <div class="panel panel--flush c12" data-theme="dark" style="background:var(--sb-bg)"><div class="cap" style="padding:20px 20px 0"><b>Limb</b><span>Particle field, seeded</span></div><div data-sb="limb" data-seed="7" data-opts='{"width":1600,"height":380,"count":4200,"top":150}'></div></div>
+  </div>
+  <p class="note" style="margin-top:16px">The limb is the only atmospheric image in the kit. It replaces photographs of Earth, so the brand never depends on a licensed picture. Ink ground only.</p>
+</section>
+
+<!-- 07 -->
+<section class="sheet" id="icons" data-n="07" data-name="Pictograms">
+  <div class="sheet__title"><h2>Pictograms</h2><p>Drawn on a 24 unit grid with a 1.5 unit stroke and round caps. <b>Six of them are the six axes</b>, because the benchmark is about how those axes interact.</p></div>
+  <div class="icons" id="icon-grid"></div>
+  <div class="sub"><h3>Tiers</h3><span class="sb-label sb-dim">Six dots, n lit. Tier is never a colour</span></div>
+  <div class="tiers" id="tiers"></div>
+  <div class="sub"><h3>Status</h3><span class="sb-label sb-dim">Shape carries the state</span></div>
+  <div class="grid">
+    <div class="panel c12"><div class="row" style="gap:36px"><span class="sb-status" data-state="pass">Pass. Contact inside every limit</span><span class="sb-status" data-state="partial">Partial. A hold point reached</span><span class="sb-status" data-state="fail">Fail. Limit exceeded at contact</span><span class="sb-status" data-state="abort">Abort. Collision, corridor, fuel or time</span></div></div>
+  </div>
+</section>
+
+<!-- 08 -->
+<section class="sheet" id="components" data-n="08" data-name="Components">
+  <div class="sheet__title"><h2>Components</h2><p>Plain HTML and CSS in <b>css/brand.css</b>, driven by the tokens. They follow the Ground and Simulation switches in the side rail.</p></div>
+  <div class="grid">
+    <div class="panel c6"><div class="cap"><b>Buttons</b><span>.sb-btn</span></div><div class="row"><a class="sb-btn">Watch replay</a><a class="sb-btn sb-btn--accent">Fly this seed</a><a class="sb-btn sb-btn--ghost">Read the method</a><a class="sb-btn sb-btn--cmd">Fire +X 0.20 s</a></div><p class="note">One accent button per view. The command button, square with corner ticks, is for actions that reach the simulator.</p></div>
+    <div class="panel c6"><div class="cap"><b>Chips, tabs, dots</b><span>.sb-chip · .sb-tabs · .sb-dots</span></div><div class="row"><span class="sb-chip">Telemetry</span><span class="sb-chip sb-chip--solid">Tier 3</span><span class="sb-chip sb-chip--accent">Live</span><span class="sb-chip sb-chip--soft">Matched board</span></div><div class="row"><div class="sb-tabs"><button aria-pressed="true">Telemetry</button><button aria-pressed="false">Vision</button><button aria-pressed="false">Autopilot</button></div><span class="sb-dots"><i></i><i aria-current="true"></i><i></i><i></i><i></i><i></i></span></div><p class="note">Tracks are tabs because they are never pooled. Six dots page through the six tiers.</p></div>
+    <div class="panel c7"><div class="cap"><b>Pilot display</b><span class="sb-specimen">Specimen</span></div><div class="sb-readouts" id="readouts"></div><p class="note">Offsets, attitude errors and rates, the same instruments a human sees. A value outside its limit gets an accent edge, not a red fill.</p></div>
+    <div class="panel c5"><div class="cap"><b>Pass rule</b><span>.sb-spec</span></div><table class="sb-spec" id="limits"></table><p class="note">Reference contact conditions, IDSS IDD Rev. F, table 3.3.1.1-2. Design conditions adopted as the pass rule, not verified flight limits.</p></div>
+    <div class="panel c6"><div class="cap"><b>Label strip</b><span>.sb-strip</span></div><div class="row"><div class="sb-strip"><div class="sb-strip__mark"><span data-sb-logo="mark" data-follow-sim></span></div><div class="sb-strip__text"><span>SpaceBench Dock · Tier 3 · Seed 0421</span><small>Re-simulated from the action log · Ref. SBD-T3-0421</small></div></div></div><p class="note">The tag that travels with a replay or a shared image. Accent block with the mark, then the facts.</p></div>
+    <div class="panel c6"><div class="cap"><b>Frame</b><span>.sb-frame</span></div><div class="sb-frame" style="padding:22px;display:grid;gap:8px"><span class="sb-label sb-bracket">Figure 2</span><span class="sb-h3">Hold points give partial credit.</span></div><p class="note">A hairline with four registration dots. Use it around figures and on stationery, one frame per sheet.</p></div>
+  </div>
+</section>
+
+<!-- 09 -->
+<section class="sheet" id="layout" data-n="09" data-name="Layout">
+  <div class="sheet__title"><h2>Layout</h2><p>Sheets, not pages. <b>Each sheet has a header row, an index numeral, one statement and one figure.</b> Twelve columns, hairlines, and generous empty paper.</p></div>
+  <div class="grid">
+    <div class="panel c7"><div class="cap"><b>Sheet anatomy</b><span>Header · index · title · figure · footer</span></div>
+      <div class="sb-frame anatomy"><div class="sb-meta sb-meta--rule"><span>SpaceBench Dock</span><span>Tier 3</span><span>03/06</span><span>Ref.</span></div>
+        <div class="a-title"><span class="sb-display sb-tone" style="font-size:54px">03/</span><div><div class="callout">Statement, two-tone</div><div class="sb-h2">Noise and fuel. <span class="sb-tone">Sensor noise, fuel limit.</span></div></div></div>
+        <div><div class="a-body"><i></i><i></i><i></i></div><div class="sb-meta" style="margin-top:12px"><span class="sb-bracket">Figure caption</span><span>Source and revision</span></div></div></div></div>
+    <div class="c5 stack">
+      <div class="panel"><div class="cap"><b>Grid</b><span>12 columns · 16 px gutter</span></div><div class="cols" id="cols"></div></div>
+      <div class="panel"><div class="cap"><b>Radius</b><span>Sheets are square, cards are not</span></div><div class="radii"><div><i style="border-radius:0"></i>0 sheet</div><div><i style="border-radius:2px"></i>2 stamp</div><div><i style="border-radius:6px"></i>6 control</div><div><i style="border-radius:10px"></i>10 card</div><div><i style="border-radius:22.5%"></i>22.5% icon</div></div></div>
+    </div>
+    <div class="panel c12"><div class="cap"><b>Spacing</b><span>--sb-space-n</span></div><div class="spacebars" id="spacebars"></div></div>
+  </div>
+</section>
+
+<!-- 10 -->
+<section class="sheet" id="data" data-n="10" data-name="Data display">
+  <div class="sheet__title"><h2>Data display</h2><p>The leaderboard is the product, so it gets the strictest rules. <b>The numbers below are a specimen</b> made by the layout code. No model has flown yet.</p></div>
+  <div class="grid">
+    <div class="panel c12"><div class="cap"><b>SpaceBench Dock · Tier 3 · Telemetry track · 30 hidden seeds</b><span class="sb-specimen">Specimen. Not a result</span></div><div style="overflow:auto"><table class="sb-board" id="board"></table></div></div>
+    <div class="panel c4"><div class="cap"><b>Order and rows</b></div><p class="note"><b>Sort by success rate.</b> Each reasoning level is its own row. The row under discussion takes the soft accent; nothing else on the table is coloured.</p></div>
+    <div class="panel c4"><div class="cap"><b>Uncertainty</b></div><p class="note"><b>A rate always shows its interval.</b> The bar is the rate, the whisker with two ring terminals is the 95% Wilson interval for k of n seeds.</p></div>
+    <div class="panel c4"><div class="cap"><b>Fences</b></div><p class="note"><b>Never pool tracks or boards.</b> Telemetry, vision and autopilot are separate tables. Live human flights and matched human flights are separate boards, and only the matched board sits next to models. Cost is per episode, never a provider ranking.</p></div>
+  </div>
+</section>
+
+<!-- 11 -->
+<section class="sheet" id="motion" data-n="11" data-name="Motion">
+  <div class="sheet__title"><h2>Motion</h2><p>Things move the way the vehicle does: <b>a short impulse, then a coast</b>. No bounce, no spring, no overshoot. An overshoot at a docking port is a failure.</p></div>
+  <div class="grid">
+    <div class="panel c4"><div class="cap"><b>Pulse</b><span>120 ms · steps</span></div><div class="track pulse"><i></i></div><p class="note">State changes, toggles, readout updates. Values step, they do not tween.</p></div>
+    <div class="panel c4"><div class="cap"><b>Burn</b><span>240 ms · ease-brake</span></div><div class="track burn"><i></i></div><p class="note">Panels, menus and cards entering or leaving.</p></div>
+    <div class="panel c4"><div class="cap"><b>Coast</b><span>480 ms · ease-coast</span></div><div class="track coast"><i></i></div><p class="note">Camera moves, page transitions, replay scrubbing. Fast start, long settle.</p></div>
+  </div>
+  <p class="note" style="margin-top:16px">With reduced motion requested, everything becomes a pulse.</p>
+</section>
+
+<!-- 12 -->
+<section class="sheet" id="applications" data-n="12" data-name="Applications">
+  <div class="sheet__title"><h2>Applications</h2><p>Templates in <b>templates/</b>, rendered to <b>exports/</b>. Each is an HTML file that reads the tokens, so a change to the standard reaches all of them on the next build.</p></div>
+  <div class="apps" id="apps"></div>
+</section>
+
+<!-- 13 -->
+<section class="sheet" id="files" data-n="13" data-name="Files">
+  <div class="sheet__title"><h2>Files</h2><p>Everything is generated from three scripts in <b>build/</b>. Change a number there, run the build, and the logos, tokens, fonts and exports follow.</p></div>
+  <div class="grid">
+    <div class="panel c6"><div class="cap"><b>Kit</b><span>brand/</span></div><pre class="tree" id="tree"></pre></div>
+    <div class="panel c6"><div class="cap"><b>Use in the web app</b><span>HTML</span></div><pre class="snip" id="snip"></pre>
+      <p class="note">Set <b>data-theme</b> to light or dark and <b>data-sim</b> to parent, dock or landing on any element. Everything inside follows. One level of nesting is supported: a dark panel in a light page, or the reverse.</p></div>
+  </div>
+</section>
+
+</main>
+<script src="js/sb-tokens.js"></script>
+<script src="js/sb-logo.js"></script>
+<script src="js/sb-graphics.js"></script>
+<script src="js/book.js"></script>
+</body>
+</html>

@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="en" data-theme="light" data-sim="dock">
+<head>
+<meta charset="utf-8">
+<title>SpaceBench leaderboard card</title>
+<link rel="stylesheet" href="../tokens/tokens.css">
+<link rel="stylesheet" href="../css/brand.css">
+<link rel="stylesheet" href="templates.css">
+<script src="../js/sb-logo.js"></script>
+<script src="../js/sb-graphics.js"></script>
+<script src="template.js"></script>
+</head>
+<body class="sb t t-board">
+<!-- 1600 x 1000. Replace specimenBoard with real rows: {name, level, k, n, score, turns, tokens, cost, think}. -->
+<div class="sb-meta sb-meta--rule"><span>SpaceBench Dock</span><span>Leaderboard</span><span>Tier 3 · Telemetry track</span><span>30 hidden seeds · One attempt</span></div>
+<div class="title"><h1>Tier 3. <span class="sb-tone">Noise and fuel.</span></h1><span class="sb-specimen">Specimen. Generated for layout. Not a result</span></div>
+<table class="sb-board" id="board"></table>
+<div class="grow"></div>
+<div class="foot"><span class="cap">Bar: success rate · Whisker: 95% Wilson interval · Cost is per episode, not a provider ranking</span><span class="lk" data-sb-logo="lockup" data-follow-sim></span></div>
+<script>
+document.getElementById('board').innerHTML = SBGraphics.boardTable(SBGraphics.specimenBoard(), { barWidth: 260 });
+SBParams.done();
+</script>
+</body>
+</html>

@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="en" data-theme="light" data-sim="dock">
+<head>
+<meta charset="utf-8">
+<title>SpaceBench Dock tier poster</title>
+<link rel="stylesheet" href="../tokens/tokens.css">
+<link rel="stylesheet" href="../css/brand.css">
+<link rel="stylesheet" href="templates.css">
+<script src="../js/sb-logo.js"></script>
+<script src="../js/sb-graphics.js"></script>
+<script src="template.js"></script>
+</head>
+<body class="sb t t-tier">
+<!-- 1080 x 1350. Variants: ?tier=1..6&theme=light|dark -->
+<div class="sb-meta sb-meta--rule"><span>SpaceBench Dock</span><span>Difficulty tiers</span><span id="page"></span><span id="ref"></span></div>
+<div class="idx"><b id="num"></b><div class="dots" id="dots"></div></div>
+<h1 id="h"></h1>
+<div class="fig grow" id="fig"><div id="figin"></div></div>
+<div class="foot">
+  <table class="sb-spec" id="spec"></table>
+  <div style="display:grid;gap:18px;justify-items:end"><span class="sb-specimen">Tier parameters are provisional</span><span class="lk" data-sb-logo="lockup" data-follow-sim></span></div>
+</div>
+<script>
+(function () {
+  var P = SBParams, G = SBGraphics, n = P.num('tier', 3), t = G.TIERS[n - 1], $ = function (i) { return document.getElementById(i); };
+  $('page').textContent = '0' + n + '/06'; $('ref').textContent = 'Ref. SBD-T' + n;
+  $('num').innerHTML = '0' + n + '<i>/</i>';
+  $('dots').innerHTML = G.tierDots(n, { r: 7, gap: 8 });
+  $('h').innerHTML = t.name + '. <span class="sb-tone">' + t.note + '.</span>';
+  var fig = { 1: G.approachArcs({ width: 960, height: 430 }), 2: null,
+    3: G.approachChart(G.specimenFlight(421, 3), { width: 960, height: 380 }),
+    4: G.thrusters({ stuck: [3] }), 5: G.thrusters({ stuck: [], failed: [2, 9, 12] }), 6: G.orbit({ size: 360 }) }[n];
+  if (n === 2) {
+    fig = '<div style="display:grid;grid-template-columns:repeat(6,1fr);gap:1px;background:var(--sb-line);border:1px solid var(--sb-line)">' + ['tx', 'ty', 'tz', 'roll', 'pitch', 'yaw'].map(function (k, i) {
+      return '<div style="background:var(--sb-bg);padding:34px 0 22px;display:grid;justify-items:center;gap:22px;color:' + (i > 2 ? 'var(--sb-accent)' : 'var(--sb-fg)') + '">' + G.icon(k, { size: 84 }) + '<span class="cap" style="color:var(--sb-fg)">' + G.AXES[i] + '</span></div>';
+    }).join('') + '</div>';
+  }
+  if (n >= 4) $('fig').classList.add('sq');
+  $('figin').innerHTML = fig;
+  var extra = { 1: ['Offset', 'Along the approach axis'], 2: ['Offset', 'Translation and rotation'], 3: ['Added', 'Sensor noise, fuel limit'], 4: ['Added', 'Actuator errors, one stuck thruster'], 5: ['Added', 'Several thruster failures'], 6: ['Added', 'Tumbling target, orbital dynamics'] }[n];
+  $('spec').innerHTML = [extra, ['Seeds', '30 hidden'], ['Attempts', 'One'], ['Pass rule', 'Contact conditions, IDSS Rev. F']].map(function (r) { return '<tr><th>' + r[0] + '</th><td class="num" style="font-family:var(--sb-font-sans)">' + r[1] + '</td></tr>'; }).join('');
+  P.done();
+})();
+</script>
+</body>
+</html>

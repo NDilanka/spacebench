@@ -1,0 +1,124 @@
+/* SpaceBench components. Requires tokens/tokens.css. Every class is prefixed sb-. */
+*,*::before,*::after{box-sizing:border-box}
+.sb{margin:0;font:var(--sb-type-body);letter-spacing:var(--sb-track-body);color:var(--sb-fg);background:var(--sb-bg);-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+[data-theme]{color:var(--sb-fg)}
+
+/* ---------- type ---------- */
+.sb-display-xl{font:var(--sb-type-display-xl);letter-spacing:var(--sb-track-display-xl)}
+.sb-display{font:var(--sb-type-display);letter-spacing:var(--sb-track-display)}
+.sb-h1{font:var(--sb-type-h1);letter-spacing:var(--sb-track-h1)}
+.sb-h2{font:var(--sb-type-h2);letter-spacing:var(--sb-track-h2)}
+.sb-h3{font:var(--sb-type-h3);letter-spacing:var(--sb-track-h3)}
+.sb-lead{font:var(--sb-type-lead);letter-spacing:var(--sb-track-lead)}
+.sb-body{font:var(--sb-type-body);letter-spacing:var(--sb-track-body)}
+.sb-small{font:var(--sb-type-small)}
+.sb-label{font:var(--sb-type-label);letter-spacing:var(--sb-track-label);text-transform:uppercase}
+.sb-micro{font:var(--sb-type-micro);letter-spacing:var(--sb-track-micro);text-transform:uppercase}
+.sb-code{font:var(--sb-type-code)}
+.sb-readout-xl{font:var(--sb-type-readout-xl)}
+.sb-readout{font:var(--sb-type-readout)}
+.sb-readout-sm{font:var(--sb-type-readout-sm)}
+.sb-display-xl,.sb-display,.sb-h1,.sb-h2,.sb-h3,.sb-lead{margin:0;text-wrap:balance}
+/* Two-tone sentence: the second tone carries the qualifier, never the claim. */
+.sb-tone{color:var(--sb-fg-3)}
+.sb-dim{color:var(--sb-fg-2)}
+.sb-accent{color:var(--sb-accent-text)}
+.sb-bracket::before{content:"[ "}
+.sb-bracket::after{content:" ]"}
+.sb-tag{display:inline-flex;align-items:center;gap:.6em;font:var(--sb-type-label);letter-spacing:var(--sb-track-label);text-transform:uppercase}
+.sb-tag::before{content:"";width:.45em;height:1.05em;background:var(--sb-accent)}
+/* Ghost cells behind a matrix readout: set data-ghost to as many block glyphs as the value has cells. */
+.sb-ghost{position:relative;display:inline-block;white-space:pre}
+.sb-ghost::before{content:attr(data-ghost);position:absolute;inset:0;color:var(--sb-line)}
+.sb-ghost>span{position:relative}
+
+/* ---------- logo ---------- */
+.sb-logo{display:block;height:1em;width:auto;overflow:visible}
+.sb-logo__mark{fill:var(--sb-accent)}
+.sb-logo__a{fill:currentColor}
+.sb-logo__b{fill:var(--sb-fg-3)}
+.sb-logo--dock .sb-logo__b,.sb-logo--landing .sb-logo__b{fill:var(--sb-accent)}
+.sb-logo--mono .sb-logo__mark,.sb-logo--mono .sb-logo__a,.sb-logo--mono .sb-logo__b{fill:currentColor}
+
+/* ---------- structure ---------- */
+.sb-meta{display:flex;justify-content:space-between;gap:var(--sb-space-6);font:var(--sb-type-label);letter-spacing:var(--sb-track-label);text-transform:uppercase;color:var(--sb-fg-2)}
+.sb-meta>:first-child{color:var(--sb-fg)}
+.sb-meta--rule{padding-bottom:var(--sb-space-4);border-bottom:1px solid var(--sb-line)}
+.sb-card{background:var(--sb-surface);border-radius:var(--sb-radius-3);padding:var(--sb-space-6)}
+.sb-card--line{background:transparent;border:1px solid var(--sb-line)}
+/* Drawing frame: a hairline with four registration dots. */
+.sb-frame{position:relative;border:1px solid var(--sb-line)}
+.sb-frame::after{content:"";position:absolute;inset:-3px;pointer-events:none;background:
+  radial-gradient(circle,var(--sb-fg) 0 2px,transparent 2.6px) top left/5px 5px no-repeat,
+  radial-gradient(circle,var(--sb-fg) 0 2px,transparent 2.6px) top right/5px 5px no-repeat,
+  radial-gradient(circle,var(--sb-fg) 0 2px,transparent 2.6px) bottom left/5px 5px no-repeat,
+  radial-gradient(circle,var(--sb-fg) 0 2px,transparent 2.6px) bottom right/5px 5px no-repeat}
+.sb-rule{border:0;border-top:1px solid var(--sb-line);margin:0}
+
+/* ---------- controls ---------- */
+.sb-btn{display:inline-flex;align-items:center;gap:.6em;height:36px;padding:0 14px;border:1px solid var(--sb-fg);border-radius:var(--sb-radius-2);background:var(--sb-fg);color:var(--sb-bg);font:500 13px/1 var(--sb-font-sans);letter-spacing:-.005em;cursor:pointer;text-decoration:none;transition:transform var(--sb-time-pulse) var(--sb-ease-coast),background var(--sb-time-pulse)}
+.sb-btn:active{transform:translateY(1px)}
+.sb-btn--ghost{background:transparent;color:var(--sb-fg);border-color:var(--sb-line-strong)}
+.sb-btn--accent{background:var(--sb-accent);border-color:var(--sb-accent);color:var(--sb-accent-contrast)}
+/* Command button: mono caps, square, corner ticks. For actions that touch the simulator. */
+.sb-btn--cmd{position:relative;border-radius:0;background:transparent;color:var(--sb-fg);border-color:var(--sb-line-strong);font:var(--sb-type-label);letter-spacing:var(--sb-track-label);text-transform:uppercase}
+.sb-btn--cmd::before,.sb-btn--cmd::after{content:"";position:absolute;width:6px;height:6px;border:1.5px solid var(--sb-fg)}
+.sb-btn--cmd::before{top:-1px;left:-1px;border-right:0;border-bottom:0}
+.sb-btn--cmd::after{bottom:-1px;right:-1px;border-left:0;border-top:0}
+.sb-chip{display:inline-flex;align-items:center;gap:.5em;height:24px;padding:0 10px;border-radius:var(--sb-radius-pill);border:1px solid var(--sb-line-strong);font:var(--sb-type-label);letter-spacing:var(--sb-track-label);text-transform:uppercase;white-space:nowrap}
+.sb-chip--solid{background:var(--sb-fg);border-color:var(--sb-fg);color:var(--sb-bg)}
+.sb-chip--accent{background:var(--sb-accent);border-color:var(--sb-accent);color:var(--sb-accent-contrast)}
+.sb-chip--soft{background:var(--sb-accent-soft);border-color:var(--sb-accent-line);color:var(--sb-accent-text)}
+.sb-tabs{display:inline-flex;padding:3px;gap:2px;background:var(--sb-bg-sunken);border-radius:var(--sb-radius-2);border:1px solid var(--sb-line)}
+.sb-tabs button{appearance:none;border:0;background:transparent;color:var(--sb-fg-2);height:26px;padding:0 10px;border-radius:4px;font:var(--sb-type-label);letter-spacing:var(--sb-track-label);text-transform:uppercase;cursor:pointer}
+.sb-tabs button[aria-pressed="true"]{background:var(--sb-surface-raised);color:var(--sb-fg);box-shadow:0 0 0 1px var(--sb-line)}
+.sb-dots{display:inline-flex;gap:6px}
+.sb-dots i{width:5px;height:5px;border-radius:50%;background:var(--sb-line-strong)}
+.sb-dots i[aria-current]{background:var(--sb-accent)}
+
+/* ---------- status: shape, never hue ---------- */
+.sb-status{display:inline-flex;align-items:center;gap:.55em;font:var(--sb-type-label);letter-spacing:var(--sb-track-label);text-transform:uppercase}
+.sb-status::before{content:"";width:9px;height:9px;border-radius:50%;border:1.5px solid currentColor;flex:none}
+.sb-status[data-state="pass"]::before{background:currentColor}
+.sb-status[data-state="partial"]::before{background:linear-gradient(90deg,currentColor 50%,transparent 50%)}
+.sb-status[data-state="fail"]{color:var(--sb-fg-2)}
+.sb-status[data-state="abort"]::before{border:0;border-radius:0;background:
+  linear-gradient(45deg,transparent 43%,currentColor 43% 57%,transparent 57%),
+  linear-gradient(-45deg,transparent 43%,currentColor 43% 57%,transparent 57%)}
+
+/* ---------- data ---------- */
+.sb-spec{width:100%;border-collapse:collapse;font:var(--sb-type-small)}
+.sb-spec th,.sb-spec td{padding:9px 0;border-top:1px solid var(--sb-line);text-align:left;vertical-align:baseline}
+.sb-spec tr:last-child th,.sb-spec tr:last-child td{border-bottom:1px solid var(--sb-line)}
+.sb-spec th{font-weight:600;padding-right:var(--sb-space-6);white-space:nowrap}
+.sb-spec td{color:var(--sb-fg-2)}
+.sb-spec td.num{text-align:right;font-family:var(--sb-font-mono);color:var(--sb-fg);white-space:nowrap}
+.sb-spec thead th{font:var(--sb-type-label);letter-spacing:var(--sb-track-label);text-transform:uppercase;color:var(--sb-fg-2);border-top:0}
+.sb-spec thead th.num{text-align:right;padding-right:0}
+.sb-readouts{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--sb-line);border:1px solid var(--sb-line)}
+.sb-readouts>div{background:var(--sb-surface);padding:12px 14px 14px;display:grid;gap:10px}
+.sb-readouts .k{display:flex;justify-content:space-between;font:var(--sb-type-micro);letter-spacing:var(--sb-track-micro);text-transform:uppercase;color:var(--sb-fg-2)}
+.sb-readouts .v{font:var(--sb-type-readout-sm);font-size:30px;white-space:nowrap}
+.sb-readouts .v small{font:var(--sb-type-micro);letter-spacing:var(--sb-track-micro);color:var(--sb-fg-2);margin-left:6px;text-transform:uppercase}
+.sb-readouts [data-out]{box-shadow:inset 3px 0 0 var(--sb-accent)}
+.sb-board{width:100%;border-collapse:collapse;font:var(--sb-type-small)}
+.sb-board th{font:var(--sb-type-micro);letter-spacing:var(--sb-track-micro);text-transform:uppercase;color:var(--sb-fg-2);text-align:left;padding:0 12px 10px 0;border-bottom:1px solid var(--sb-fg);white-space:nowrap}
+.sb-board td{padding:11px 12px 11px 0;border-bottom:1px solid var(--sb-line);vertical-align:middle;white-space:nowrap}
+.sb-board .num,.sb-board th.num{text-align:right;font-family:var(--sb-font-mono)}
+.sb-board .rank{font-family:var(--sb-font-mono);color:var(--sb-fg-2);width:34px}
+.sb-board .name b{font-weight:600}
+.sb-board .name span{color:var(--sb-fg-2);margin-left:8px;font:var(--sb-type-micro);letter-spacing:var(--sb-track-micro);text-transform:uppercase}
+.sb-board .rate{font:var(--sb-type-readout-sm);font-size:22px}
+.sb-board svg{display:block}
+.sb-board tr[data-focus] td{background:var(--sb-accent-soft)}
+.sb-board tr[data-focus] .rate{color:var(--sb-accent-text)}
+/* Label strip: an accent block with the mark, then a strip of facts. */
+.sb-strip{display:inline-flex;align-items:stretch;height:44px;background:var(--sb-surface-raised);color:var(--sb-fg);box-shadow:var(--sb-shadow-card)}
+.sb-strip__mark{width:44px;display:grid;place-items:center;background:var(--sb-accent);color:var(--sb-accent-contrast)}
+.sb-strip__mark .sb-logo{height:24px}
+.sb-strip__mark .sb-logo__mark{fill:currentColor}
+.sb-strip__text{display:grid;align-content:center;gap:3px;padding:0 14px;font:700 10px/1 var(--sb-font-sans);letter-spacing:.04em;text-transform:uppercase}
+.sb-strip__text small{font:var(--sb-type-micro);font-size:8px;letter-spacing:.08em;color:var(--sb-fg-2)}
+/* Specimen stamp: goes on anything that shows sample data. */
+.sb-specimen{display:inline-flex;align-items:center;gap:.6em;height:22px;padding:0 8px;border:1px dashed var(--sb-fg-2);font:var(--sb-type-micro);letter-spacing:var(--sb-track-micro);text-transform:uppercase;color:var(--sb-fg-2)}
+.sb-icon{display:inline-block;vertical-align:middle}
