@@ -1,0 +1,16 @@
+# Build output
+target/
+node_modules/
+*.wasm
+
+# Local working material, not part of the project
+.work/
+video/
+Design direction/
+resources for curating a fine workflow/
+
+# OS and editor noise
+Thumbs.db
+.DS_Store
+.vscode/
+.idea/
