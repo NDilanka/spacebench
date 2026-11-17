@@ -164,3 +164,17 @@ Workers never touch this file.
   - `FAIL determinism`: both builds exit 0; the ABI probe passes on both sides; all 15 run pairs are `invalid` on the unimplemented core.
 - This is the expected red. `git status --short` on `main` is empty after the run.
 - Gate status after orders 2 and 6: red.
+
+### 2026-11-17T17:27+05:30 Order 1 landed: gate on `main`
+
+- Merge commit `bd0cece`, `--no-ff`, of `order/1` into `main`.
+- `pwsh -NoProfile -File scripts/check.ps1` on `main`: exit code 0.
+  - `PASS physics`: `cargo test --locked -p spacebench-core` exits 0. 11 unit tests and 23 of 23 contract tests pass, 34 in all.
+  - `PASS clippy`: both Clippy commands exit 0.
+  - `PASS determinism`: both builds exit 0; the ABI probe passes on both sides; all 15 run pairs match. This is the first real run of the gate's success path.
+    - seed 1: ticks 0 `9cd04be66174cce4`, 1 `677bdf615f524a79`, 7 `79dddbade16d0c12`, 1000 `0599a4b85f45a1dd`, 200000 `afbdc94cf80ce4e1`.
+    - seed 2: ticks 0 `138084a7940e67c4`, 1 `435e7b3f8a62568c`, 7 `ead558176e6dbb1b`, 1000 `6fc165b99273bfb8`, 200000 `19a6fb591dfac18d`.
+    - seed 3735928559: ticks 0 `9ff6356190339c04`, 1 `cc406db29ee8b477`, 7 `764af3544ed239bb`, 1000 `224a8a2f3be3867b`, 200000 `f1a84622bb31d527`.
+  - These hash values are a record of this run. The gate compares the two builds live and pins none of them.
+- This is the expected green. `git status --short` on `main` is empty after the run.
+- Gate status after order 1: green.
