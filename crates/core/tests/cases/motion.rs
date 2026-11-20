@@ -615,6 +615,18 @@ fn vector_close_rejects_one_nan_among_finite_components() {
 }
 
 #[test]
+#[should_panic(expected = "non-finite")]
+fn converges_rejects_infinite_errors() {
+    // Negative control: +inf errors would satisfy inf <= inf, so the finiteness guard must fire first.
+    converges(
+        "infinite-errors",
+        [f64::INFINITY, f64::INFINITY, f64::INFINITY],
+        2,
+        1.0,
+    );
+}
+
+#[test]
 fn long_run_normalizes_attitude_increments_tick_and_preserves_inputs() {
     // A fresh renormalization each step prevents N-fold norm drift. Four
     // squares, three additions, sqrt and four divisions give roughly 13

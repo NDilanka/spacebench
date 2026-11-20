@@ -168,6 +168,15 @@ pub fn rounding(count: u32, scale: f64) -> f64 {
 }
 
 pub fn converges(label: &str, errors: [f64; 3], order: u32, scale: f64) {
+    // Reject non-finite inputs first: +inf <= +inf passes, so an overflowed error would otherwise slip through.
+    assert!(
+        scale.is_finite() && scale >= 0.0,
+        "{label}: scale={scale:e} must be finite and non-negative"
+    );
+    assert!(
+        errors.iter().all(|error| error.is_finite()),
+        "{label}: non-finite errors={errors:?}, scale={scale:e}"
+    );
     // Order alone supplies no absolute error constant. At fixed T, E(h)=C h^p
     // gives E(h/2)/E(h)=2^-p. Allow half an order for pre-asymptotic terms:
     // <=2^-3.5 for p=4, <=2^-1.5 for p=2. These are predeclared finite-regime
