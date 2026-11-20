@@ -234,3 +234,55 @@ Workers never touch this file.
   - Run the example a second time to a second path (or overwrite and rehash) and confirm identical SHA-256.
 - Expected result before landing: green on all checks above.
 
+### 2026-11-20T19:24+05:30 Round two reports, person's decisions, and Order 5 receipt
+
+- **Droid update by the person:** when using Sol, use GPT-6.2 Sol at high effort (`pv-sol62-high`, saved at `~/.factory/droids/pv-sol62-high.md`). Order 4 ran on `pv-sol62-high`.
+- **Order 4 report (`pv-sol62-high`, read-only on `crates/core/src/lib.rs`):**
+  - Integrator, cofactor adjugate, coning sign, hashing, `scripted_run`, and determinism hygiene verified clean.
+  - Core-P1 (flagged blocking): extreme ill-conditioned mathematically-SPD inertia (`[[1 + 2^-52, 1, 0], [1, 1 - 2^-53, 0], [0, 0, 1]]`) produces `det == 0.0` in binary64 inside `inverse3`, emitting Inf/NaN.
+  - Core-P2 (non-blocking): `8 * (N + 4) * f64::EPSILON * peak_magnitude` fails by ~9.96x on an oscillating zero-net-displacement pulse train (`+800, -1600, +800 N` x 1,000 cycles, `2.277e-14 m` vs `2.285e-15 m`), because the doc stated it without requiring a constant wrench.
+  - Core-P3 (non-blocking): `DT` rounding-level doc wording focuses on angular speed and omits angular acceleration.
+- **Test derivation review report (`pv-opus-high`, read-only on `crates/core/tests/**`):**
+  - All 23 closed-form derivations and the Order 6 rotation-order experiment verified sound. No wrong derivations.
+  - Test-W1 (high): `support::largest` compares `component.abs() > result`, which is false for `NaN`, so `vector_close` passes on `NaN`; `support::advance` does not assert finiteness.
+  - Test-M1: straight push compares component-max error against Euclidean-norm budget (up to `sqrt(3)` loose).
+  - Test-W2 (medium): rotating translation is only tested on steady principal-axis spin (4th order on this core); true 2nd-order rotating translation under a turning rate vector is untested.
+  - Test-W3 (medium): three tests (principal-axis torque, steady spin, body-frame equivalence) compare rounding to rounding while comments claim fourth-order convergence or above-rounding regime.
+  - Test-W4 (low): non-diagonal inertia is never tested with non-zero torque.
+  - `8*(N+4)` vs `64*(N+4)`: consistent (`8` is contract for fixed-attitude translation; `64` is a conservative test floor/guard elsewhere); clarify the comment in `support/mod.rs`.
+- **Partner discussion (`pv-astra62-high`, read-only):**
+  - Independently reproduced Core-P2 (`2.27693e-14 m` vs `2.28527e-15 m`) and noted that `1e110 * I_3` (`kappa = 1`) also overflows `det` in `inverse3` (caught by `det.is_finite() && det != 0.0`; full vehicle-envelope admission validation belongs at scenario admission in Build Step 2).
+  - Endorsed landing Order 5 now and dispatching Orders 7 and 8 with sharpened acceptance criteria.
+- **Decisions by the person (2026-11-20):**
+  - Accepted Order 5 landing now with pre-existing uncommitted `brand/` files recorded as an explicit exception to the clean-tree receipt rule (verified no stray files outside `brand/`).
+  - Approved dispatching Orders 7 and 8 in parallel, including the exact proposed `crates/core/src/lib.rs` doc wording and `det.is_finite() && det != 0.0` guard in `inverse3`.
+  - Approved removing all Build Step 1 worktrees (`D:\dev\spacebench-wt\order-*`) while keeping branches after the final Build Step 1 landing.
+- **Order 5 receipt (`5537401` on `order/5`, merged to `main` as `706e58b`, `--no-ff`):**
+  - Branch diff lies strictly inside allowed paths: `crates/core/examples/spin_errors.rs` (362 lines) and `docs/spin-errors.svg` (55 lines).
+  - Main tree check: no stray files outside the person-accepted `brand/` exception.
+  - Checks rerun by lead in `D:\dev\spacebench-wt\order-5`: Clippy exit 0, `spin_errors` exit 0 (max energy error `8.705937e-14`, final `7.149899e-14`; max angular-momentum error `6.765285e-13`, final `6.733738e-13`), 2 `<polyline>` elements, rerun SHA-256 identical (`A25EF75703696F187CFA3A4B71A6301F2BCD9F8D23AD1A4D203C84B257926EBE`), `scripts/check.ps1` exit 0.
+  - Gate on `main` after merge `706e58b`: `pwsh -NoProfile -File scripts/check.ps1` exit 0 (`PASS physics` 34/34, `PASS clippy` native and wasm, `PASS determinism` 15/15).
+  - Not verified: visual rendering of `docs/spin-errors.svg` to PNG by eye.
+
+### 2026-11-20T19:24+05:30 Order 7: contract test hardening
+
+- Droid `pv-haiku-xhigh`. Branch `order/7`. Worktree `D:\dev\spacebench-wt\order-7`.
+- Intent: close all five test-review findings (W1, M1, W2, W3, W4) and clarify the `64` factor comment in `support/mod.rs`:
+  - W1: make `support::largest` reject `NaN` (including one `NaN` among finite components), make `vector_close` reject non-finite operands/tolerance, assert every `State` field is finite in `support::advance`, and add a self-test in `crates/core/tests` exercising the single-NaN negative control.
+  - M1: assert Euclidean vector error `norm(sub(actual, exact))` against `8 * (N + 4) * f64::EPSILON * norm(exact)` separately for position and velocity in the straight-push test.
+  - W2: add a closed-form precessing body-x force translation test checking at least second-order convergence (`>= 2`, not pinned to `2.00`) with a rounding guard at every mesh.
+  - W3: correct the comments in principal-axis torque, steady principal-axis spin, and body-frame equivalence (distinguishing exact-case rounding checks from order measurements) and note in `support/mod.rs` that `64` is `8x` the contract factor.
+  - W4: add an analytic non-diagonal inertia test with non-zero torque (`I = [[3, 1, 0], [1, 3, 0], [0, 0, 3]]`, `tau = [4, 4, 0]`, closed form `w(t) = [t, t, 0]`).
+- Allowed paths: `crates/core/tests/**`.
+- Checks: `cargo clippy --workspace --all-targets --locked -- -D warnings`, `cargo test --locked -p spacebench-core`, `pwsh -NoProfile -File scripts/check.ps1`.
+- Expected result before landing: green on all checks. Verification of the new diff by `pv-sol62-high` (read-only) before landing.
+
+### 2026-11-20T19:24+05:30 Order 8: core doc clarifications and inverse3 determinant guard
+
+- Droid `pv-haiku-xhigh`. Branch `order/8`. Worktree `D:\dev\spacebench-wt\order-8`.
+- Intent: apply the exact person-approved doc wording updates on `Vehicle.inertia` and `step` in `crates/core/src/lib.rs`, add `assert!(det.is_finite() && det != 0.0, "vehicle inertia determinant must be finite and non-zero")` inside `inverse3`, and add unit test(s) inside `crates/core/src/lib.rs` verifying `inverse3` panics on singular/extreme-ill-conditioned and overflowed-determinant inertias without producing NaNs. No public signature changes.
+- Allowed paths: `crates/core/src/**`.
+- Checks: `cargo clippy --workspace --all-targets --locked -- -D warnings`, `cargo clippy --workspace --lib --locked --target wasm32-unknown-unknown -- -D warnings`, `cargo test --locked -p spacebench-core`, `pwsh -NoProfile -File scripts/check.ps1`.
+- Expected result before landing: green on all checks, with all 15 determinism hashes unchanged. Verification of the new diff by `pv-sol62-high` (read-only) before landing.
+
+
