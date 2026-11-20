@@ -199,3 +199,38 @@ Workers never touch this file.
 
 - Round two has not started: no core review (order 4), no review of the test derivations, no chart (order 5). `docs/spin-errors.svg` does not exist.
 - The worktrees of orders 1, 2, 3 and 6 are still on `D:`. Nothing is pushed.
+
+### 2026-11-20T18:36+05:30 Round two started, by the person's instruction
+
+- The person instructed the lead to continue with round two, use Haiku 5.5 (`pv-haiku-xhigh`) for worker implementation, and create a GPT-6.2 Astra high custom droid (`pv-astra62-high`, saved as a personal droid at `~/.factory/droids/pv-astra62-high.md`) for lead-partner discussions on critical decisions.
+- Note on main tree cleanliness: `brand/` currently contains uncommitted user work from outside build step 1. The lead leaves `brand/` untouched and commits only `ORDERS.md` here.
+
+### 2026-11-20T18:36+05:30 Order 4: core review
+
+- Droid `pv-sol-high`, read-only, fresh session. No branch, no worktree, no edits.
+- Intent: review `crates/core/src/**` against the contract, the integrator recipe, and the determinism rules in `AGENTS.md`.
+- Told: `crates/core/src/lib.rs`, `clippy.toml`, `AGENTS.md`, and the integrator recipe from the approved spec.
+- Not told: `crates/core/tests/**` (Sol wrote them and does not review them).
+- Expected result: read-only review report with verified line references and concrete findings, if any.
+
+### 2026-11-20T18:36+05:30 Test derivation review
+
+- Droid `pv-opus-high`, read-only. No branch, no worktree, no edits.
+- Intent: review the closed-form derivations, rounding budgets, and tolerance derivations in `crates/core/tests/**` against the contract and physics.
+- Told: `crates/core/src/lib.rs` doc comments/contract, `crates/core/tests/**`, and the open notes from `ORDERS.md` (the `64 * (N + 4) * EPSILON * scale` budget vs `8 * (N + 4) * EPSILON`, and the `|w| * h = 0.35` step size).
+- Expected result: read-only review report with verified derivations and concrete findings, if any.
+
+### 2026-11-20T18:36+05:30 Order 5: spin-errors chart
+
+- Droid `pv-haiku-xhigh`. Branch `order/5`. Worktree `D:\dev\spacebench-wt\order-5`.
+- Intent: add example `crates/core/examples/spin_errors.rs` that runs a 1-hour (720,000 ticks at `DT`) torque-free tumble of `PLACEHOLDER_VEHICLE` with initial angular velocity non-zero on all three axes, and writes `docs/spin-errors.svg` by hand with no new dependencies. The SVG plots relative kinetic energy error and relative inertial angular-momentum error as two `<polyline>` curves on a `log10` y-axis computed with `libm::log10`, clamping zero errors to a labelled floor.
+- Allowed paths: `crates/core/examples/**`, `docs/**`.
+- Told: the public API of `crates/core`, `AGENTS.md` determinism and hygiene rules (`libm`, no `std` float math, one-line reason on any `unsafe`, `#[allow]`, `unwrap`, or `expect`), and the chart requirements above.
+- Not told: any code in `crates/core/tests/**`.
+- Checks:
+  - `cargo clippy --workspace --all-targets --locked -- -D warnings`
+  - `cargo run --locked --release -p spacebench-core --example spin_errors -- docs/spin-errors.svg`
+  - Confirm `docs/spin-errors.svg` has two `<polyline` elements.
+  - Run the example a second time to a second path (or overwrite and rehash) and confirm identical SHA-256.
+- Expected result before landing: green on all checks above.
+
