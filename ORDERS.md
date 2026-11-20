@@ -285,4 +285,25 @@ Workers never touch this file.
 - Checks: `cargo clippy --workspace --all-targets --locked -- -D warnings`, `cargo clippy --workspace --lib --locked --target wasm32-unknown-unknown -- -D warnings`, `cargo test --locked -p spacebench-core`, `pwsh -NoProfile -File scripts/check.ps1`.
 - Expected result before landing: green on all checks, with all 15 determinism hashes unchanged. Verification of the new diff by `pv-sol62-high` (read-only) before landing.
 
+### 2026-11-20T20:00+05:30 Receipts for Orders 8 and 7, and Build Step 1 closeout
+
+- **Cross-lab review (`pv-sol62-high`, read-only on `b25f0c5..09c630d` and `b25f0c5..6559cf6`):**
+  - Order 8 (`09c630d`): pass on static review (docs, `inverse3` determinant guard, `no_std` safety, both panic tests verified).
+  - Order 7 (`6559cf6`): W1, M1, W2 Rodrigues closed form, W3, W4, and hygiene verified. Flagged two `[P3]` notes: (1) `support::converges` did not assert error finiteness, so overflowed `+inf` norms could satisfy `+inf <= +inf`; (2) `converges(..., 2, ...)` keeps the suite's shared half-order slack (`2^1.5`, ratio `<= 0.3536`, matching Order 2's convention; measured W2 ratio is `4.000`).
+- **Person's acceptance (2026-11-20):** approved patching `support::converges` finiteness on `order/7`, landing Order 8 then Order 7 on `main`, and removing all Build Step 1 worktrees while keeping `order/*` branches.
+- **Order 8 receipt (`09c630d` on `order/8`, merged to `main` as `0fb34fa`, `--no-ff`):**
+  - Branch diff lies strictly inside allowed paths: `crates/core/src/lib.rs` (+76/-9). Zero public signature changes.
+  - Main tree check: no stray files outside the person-accepted `brand/` exception.
+  - Lead rerun in `D:\dev\spacebench-wt\order-8`: `scripts/check.ps1` exit 0 (`PASS physics` 36/36: 13 unit + 23 contract, `PASS clippy` native and wasm, `PASS determinism` 15/15; 200k hashes unchanged: `afbdc94cf80ce4e1`, `19a6fb591dfac18d`, `f1a84622bb31d527`).
+  - Gate on `main` after merge `0fb34fa`: `scripts/check.ps1` exit 0 (`PASS physics` 36/36, `PASS clippy`, `PASS determinism` 15/15).
+- **Order 7 receipt (`6559cf6` + follow-up `b594a94` on `order/7`, merged to `main` as `218603e`, `--no-ff`):**
+  - Follow-up `b594a94` (`pv-haiku-xhigh`) added `scale.is_finite() && scale >= 0.0` and `errors.iter().all(|e| e.is_finite())` assertions to `support::converges` plus the `#[should_panic(expected = "non-finite")]` negative-control test `converges_rejects_infinite_errors`.
+  - Branch diff (`b25f0c5..b594a94`) lies strictly inside allowed paths: `crates/core/tests/cases/motion.rs` and `crates/core/tests/support/mod.rs` (+247/-33 total).
+  - Main tree check: no stray files outside the person-accepted `brand/` exception.
+  - Lead rerun in `D:\dev\spacebench-wt\order-7`: `scripts/check.ps1` exit 0 (`PASS physics` 39/39: 11 unit + 28 contract, `PASS clippy`, `PASS determinism` 15/15).
+  - Gate on `main` after merge `218603e`: `pwsh -NoProfile -File scripts/check.ps1` exit 0 (`PASS physics` 41/41: 13 unit + 28 contract; `PASS clippy` native and wasm `-D warnings`; `PASS determinism` ABI probe `fedcba9876543210` + 15/15 runs match, 200k hashes `afbdc94cf80ce4e1`, `19a6fb591dfac18d`, `f1a84622bb31d527`).
+- **Worktree cleanup:** removed all seven clean Build Step 1 worktrees (`D:\dev\spacebench-wt\order-1`, `order-2`, `order-3`, `order-5`, `order-6`, `order-7`, `order-8`) via `git worktree remove`. All `order/*` branches remain intact locally (`order/1`, `order/2`, `order/3`, `order/5`, `order/6`, `order/7`, `order/8`). Nothing pushed.
+- **Build Step 1 status:** complete and green on `main`.
+
+
 
