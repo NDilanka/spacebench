@@ -65,7 +65,8 @@ pub struct Vehicle<'a> {
     /// Mass in kilograms. Must be finite and greater than zero.
     pub mass: f64,
     /// Inertia tensor about the centre of mass in the body frame, in kg m^2.
-    /// Must be symmetric and positive definite. Products of inertia are allowed.
+    /// Must be symmetric, positive definite, and well-conditioned in binary64
+    /// with finite non-zero determinant. Products of inertia are allowed.
     pub inertia: Mat3,
     /// Thruster table. At most [`MAX_THRUSTERS`] entries.
     pub thrusters: &'a [Thruster],
@@ -203,9 +204,9 @@ pub fn thruster_wrench(thrusters: &[Thruster], firing: u32) -> Wrench {
 /// Accuracy claims that tests may rely on:
 ///
 /// - Rotation (`attitude` and `angular_velocity`) is fourth order in `dt`.
-/// - Translation (`position` and `velocity`) is exact up to rounding when the
-///   attitude does not change during the run, and at least second order in
-///   `dt` otherwise.
+/// - Translation (`position` and `velocity`) is exact up to rounding when
+///   the attitude and wrench do not change during the run (or when
+///   `wrench.force` is zero), and at least second order in `dt` otherwise.
 ///
 /// What the claims mean:
 ///
@@ -213,11 +214,17 @@ pub fn thruster_wrench(thrusters: &[Thruster], firing: u32) -> Wrench {
 ///   exact solution, scales as `dt^p` when `dt` shrinks. Attitude error is
 ///   the angle of the rotation between the computed and the exact attitude,
 ///   so `q` and `-q` count as equal.
-/// - An order can only be measured where truncation error is larger than
-///   rounding error: roughly `|w| * dt` between 0.01 and 0.2. At [`DT`] and
-///   docking rates the error is already at rounding level.
-/// - "Exact up to rounding" means that after `N` ticks each of `position`
-///   and `velocity` differs from the closed form by at most
+/// - To measure rotational order, use a motion such as torque-free
+///   precession where the body angular-velocity vector changes direction;
+///   rotation about one fixed body axis can be exact up to rounding and
+///   cannot establish order. No fixed range of `|w| * dt` guarantees a
+///   useful measurement (angular acceleration also enters truncation
+///   error): at a fixed end time, check that error clears rounding at
+///   every step size used and decreases at the claimed rate under
+///   refinement.
+/// - "Exact up to rounding" means that after `N` ticks with unchanged
+///   attitude and constant wrench (or zero force), each of `position` and
+///   `velocity` differs from the closed form by at most
 ///   `8 * (N + 4) * f64::EPSILON` times the largest magnitude that vector
 ///   reaches during the run.
 ///
@@ -466,6 +473,10 @@ fn inverse3(m: &Mat3) -> Mat3 {
     let c21 = m[0][2] * m[1][0] - m[0][0] * m[1][2];
     let c22 = m[0][0] * m[1][1] - m[0][1] * m[1][0];
     let det = m[0][0] * c00 + m[0][1] * c01 + m[0][2] * c02;
+    assert!(
+        det.is_finite() && det != 0.0,
+        "vehicle inertia determinant must be finite and non-zero"
+    );
     [
         [c00 / det, c10 / det, c20 / det],
         [c01 / det, c11 / det, c21 / det],
@@ -747,6 +758,62 @@ mod tests {
         let first = scripted_run(1, 1000);
         assert_eq!(first, scripted_run(1, 1000));
         assert_ne!(first, scripted_run(2, 1000));
+    }
+
+    /// The inertia block [[1 + e, 1], [1, 1 - e / 2]], with e = f64::EPSILON, is symmetric
+    /// and positive definite. Its exact determinant is (1 + e)(1 - e / 2) - 1 = e / 2 - e^2 / 2,
+    /// which is positive. In binary64 the product (1 + e)(1 - e / 2) rounds to 1, so the
+    /// computed determinant is 0.0. `step` must refuse it instead of dividing by zero.
+    #[test]
+    #[should_panic(expected = "vehicle inertia determinant must be finite and non-zero")]
+    fn step_rejects_spd_inertia_whose_determinant_rounds_to_zero() {
+        let e = f64::EPSILON;
+        let vehicle = Vehicle {
+            mass: ESTIMATE_MASS_KG,
+            inertia: [
+                [1.0 + e, 1.0, 0.0],
+                [1.0, 1.0 - e / 2.0, 0.0],
+                [0.0, 0.0, 1.0],
+            ],
+            thrusters: &[],
+        };
+        let zero = Wrench {
+            force: [0.0; 3],
+            torque: [0.0; 3],
+        };
+        let state = State {
+            tick: 0,
+            position: [0.0; 3],
+            velocity: [0.0; 3],
+            attitude: [1.0, 0.0, 0.0, 0.0],
+            angular_velocity: [0.0; 3],
+        };
+        step(&vehicle, &state, &zero, DT);
+    }
+
+    /// The identity scaled by s = 1e110. Each cofactor is s^2 = 1e220, which is finite, but
+    /// the determinant is s^3 = 1e330, above f64::MAX (about 1.8e308), so the computed
+    /// determinant is f64::INFINITY. `step` must refuse it.
+    #[test]
+    #[should_panic(expected = "vehicle inertia determinant must be finite and non-zero")]
+    fn step_rejects_huge_inertia_whose_determinant_overflows() {
+        let vehicle = Vehicle {
+            mass: ESTIMATE_MASS_KG,
+            inertia: [[1e110, 0.0, 0.0], [0.0, 1e110, 0.0], [0.0, 0.0, 1e110]],
+            thrusters: &[],
+        };
+        let zero = Wrench {
+            force: [0.0; 3],
+            torque: [0.0; 3],
+        };
+        let state = State {
+            tick: 0,
+            position: [0.0; 3],
+            velocity: [0.0; 3],
+            attitude: [1.0, 0.0, 0.0, 0.0],
+            angular_velocity: [0.0; 3],
+        };
+        step(&vehicle, &state, &zero, DT);
     }
 
     /// Prints the values reported to the lead. Run with `--nocapture`.
