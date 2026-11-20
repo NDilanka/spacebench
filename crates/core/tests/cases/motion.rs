@@ -1,6 +1,17 @@
 use crate::support::*;
 use spacebench_core::{DT, Mat3, State, Vec3, Vehicle, Wrench};
 
+// Asserts |actual-exact| <= factor*|exact| using the Euclidean norm, with every
+// quantity finite. A zero exact vector therefore has to be matched exactly.
+fn euclidean_within(label: &str, actual: Vec3, exact: Vec3, factor: f64) {
+    let error = norm(sub(actual, exact));
+    let bound = factor * norm(exact);
+    assert!(
+        error.is_finite() && bound.is_finite() && error <= bound,
+        "{label}: actual={actual:?}, exact={exact:?}, error={error:e}, bound={bound:e}"
+    );
+}
+
 #[test]
 fn constant_force_without_rotation_matches_rounding_bound_at_two_attitudes() {
     // With w=tau=0, R is constant; integrate v'=a=RF/m twice:
@@ -21,25 +32,13 @@ fn constant_force_without_rotation_matches_rounding_bound_at_two_attitudes() {
             add(initial.position, scale(initial.velocity, time)),
             scale(acceleration, 0.5 * time * time),
         );
-        // The contract bounds each vector by 8(N+4)eps times its largest
-        // magnitude. Interpret vector magnitude as Euclidean norm; using it
-        // to bound each component cannot reject a vector within that bound.
+        // Contract straight-push bound: each vector agrees with its closed form
+        // to 8(N+4)eps times its Euclidean norm. The check measures the
+        // Euclidean norm of the error, which is at least its largest component.
         let factor = 8.0 * (f64::from(count) + 4.0) * f64::EPSILON;
-        let position_tolerance = factor * norm(exact_x);
-        let velocity_tolerance = factor * norm(exact_v);
         let actual = integrate(&BODY, initial, &wrench, time, count);
-        vector_close(
-            "constant-force position",
-            actual.position,
-            exact_x,
-            position_tolerance,
-        );
-        vector_close(
-            "constant-force velocity",
-            actual.velocity,
-            exact_v,
-            velocity_tolerance,
-        );
+        euclidean_within("constant-force position", actual.position, exact_x, factor);
+        euclidean_within("constant-force velocity", actual.velocity, exact_v, factor);
     }
 }
 
@@ -48,8 +47,9 @@ fn constant_principal_axis_torque_from_rest_matches_rate_and_attitude() {
     // Starting on a principal axis makes w x Iw=0 forever:
     // w=alpha*t, alpha=tau/Iaxis. Integrating q'=q(0,w)/2 gives the
     // body-axis angle theta=alpha*t^2/2, hence q=q0*spin(axis,theta).
-    // Rates and attitude use the predeclared fourth-order refinement budget
-    // in converges(); the contract supplies no absolute rotational constant.
+    // The measured rate and attitude errors are about 1e-15 at every mesh,
+    // which is rounding. The converges() checks below therefore pass on their
+    // rounding floor; they confirm agreement to rounding, not a fourth order.
     for axis in 0..3 {
         for sign in [-1.0, 1.0] {
             let alpha = sign * 0.6;
@@ -87,8 +87,10 @@ fn constant_principal_axis_torque_from_rest_matches_rate_and_attitude() {
 fn torque_free_principal_axis_spin_has_constant_rate_and_exponential_attitude() {
     // For a principal-axis w, w x Iw=0, so w=w0. The constant-coefficient
     // quaternion ODE exponentiates: q=q0*[cos(|w|t/2), w*sin(|w|t/2)/|w|].
-    // h=.08,.04,.02 gives |w|h=.136,.068,.034, above the rounding regime.
-    // Apply the fourth-order refinement rule plus its stated rounding floor.
+    // h=.08,.04,.02 gives |w|h=.136,.068,.034. The measured attitude errors
+    // are 1e-16 to 1e-15 at every mesh, which is rounding, not truncation. The
+    // converges() check below therefore passes on its rounding floor and does
+    // not measure an order.
     for axis in 0..3 {
         for sign in [-1.0, 1.0] {
             let mut rate = [0.0; 3];
@@ -302,10 +304,14 @@ fn tensor_in_rotated_body_frame(rotation: [f64; 4], diagonal: Mat3) -> Mat3 {
 fn full_inertia_tensor_is_covariant_under_body_frame_rotation() {
     // S changes only the description, not the body: I_new=S^T I S,
     // w_new=S^T w, q_new=q_old*S. Therefore q_new*S^-1 and S*w_new
-    // equal the case-7 closed form, and R(q_new)I_new*w_new equals its
-    // inertial momentum. Both frame descriptions must converge at order four.
-    // Rounding the transformed tensor adds O(eps) representation error,
-    // covered by rounding(); refinement tolerances are fixed in advance.
+    // equal the symmetric closed form, and R(q_new)I_new*w_new equals its
+    // inertial momentum. Rate, attitude and momentum errors are checked for
+    // fourth order. Measured rate errors fall by 16 per halving
+    // (1.8e-8, 1.1e-9, 7.1e-11), but at N=128 the rate error is about 20 times
+    // its rounding floor, below the 100x guard used elsewhere. The frame
+    // equivalence errors (about 5e-15) are rounding-level, so that check
+    // passes on its floor. The transformed tensor is rounded to double; this
+    // test does not bound that change separately.
     let original = symmetric_initial();
     let frame = spin([0.4, -0.7, 0.2], 1.0);
     let body = Vehicle {
@@ -381,9 +387,8 @@ fn rotational_error_at_dt_half_dt_quarter_dt_shows_fourth_order() {
     // q^-1*q'=(0,Rx(-k*t)*u+k*ex)/2=(0,w(t))/2, and q(0)=1.
     // This independently checks symmetric_solution's formula and signs.
     //
-    // The person's instruction is to use a fast spin or larger steps:
-    // |w|h=.35 deliberately exceeds step's roughly .01--.2 guidance at
-    // the coarsest mesh. T=.14 and N=4,8,16 keep accumulated spin and
+    // The coarse meshes are deliberately large: |w|h=.35 at N=4, so truncation
+    // is visible above rounding. T=.14 and N=4,8,16 keep accumulated spin and
     // the step-count rounding budget small.
     //
     // A-priori planning estimate, not a bound or measured error:
@@ -455,6 +460,158 @@ fn rotating_translation_error_shows_at_least_second_order() {
             "translation needs order >=1.5: {errors:?}"
         );
     }
+}
+
+const PRECESSING_FORCE: Wrench = Wrench {
+    force: [3.0, 0.0, 0.0],
+    torque: [0.0; 3],
+};
+
+// Closed form for body-x thrust on a torque-free body with I=diag(A,B,B).
+// Write w0=(p,b,c), k=(B-A)p/B, u=(A p/B, b, c), Omega=|u|, n=u/Omega.
+// - symmetric_solution gives q(t)=q0*spin(u,t)*spin(k ex,t).
+// - spin(k ex,t) leaves ex fixed, so R(q(t)) ex = R(q0) Rot(n,Omega t) ex.
+// - Rodrigues: Rot(n,th) ex = ex cos th + (n x ex) sin th + n (n.ex)(1-cos th).
+// - The translation equations are m v' = R(q) F and x' = v, with F = f ex.
+// Integrating the three Rodrigues terms over [0,T] gives
+//   v(T) = v0 + (f/m) R(q0) [ex J1c + (n x ex) J1s + n (n.ex) J1m],
+//   J1c = sin(OT)/O, J1s = (1-cos OT)/O, J1m = T - sin(OT)/O.
+// Using x(T) = x0 + v0 T + int_0^T (T-t) a(t) dt gives
+//   x(T) = x0 + v0 T + (f/m) R(q0) [ex J2c + (n x ex) J2s + n (n.ex) J2m],
+//   J2c = (1-cos OT)/O^2, J2s = T/O - sin(OT)/O^2, J2m = T^2/2 - (1-cos OT)/O^2.
+fn precessing_translation_solution(initial: &State, time: f64) -> (Vec3, Vec3) {
+    let [p, b, c] = initial.angular_velocity;
+    let u = [BODY.inertia[0][0] * p / BODY.inertia[1][1], b, c];
+    let omega = norm(u);
+    let n = scale(u, 1.0 / omega);
+    let n_dot_x = n[0];
+    let n_cross_x = cross(n, [1.0, 0.0, 0.0]);
+    let cosine = libm::cos(omega * time);
+    let sine = libm::sin(omega * time);
+    let omega_sq = omega * omega;
+    let body_term = |c_ex: f64, c_cross: f64, c_n: f64| {
+        add(
+            add(scale([1.0, 0.0, 0.0], c_ex), scale(n_cross_x, c_cross)),
+            scale(n, n_dot_x * c_n),
+        )
+    };
+    let v_term = body_term(sine / omega, (1.0 - cosine) / omega, time - sine / omega);
+    let x_term = body_term(
+        (1.0 - cosine) / omega_sq,
+        time / omega - sine / omega_sq,
+        time * time / 2.0 - (1.0 - cosine) / omega_sq,
+    );
+    let accel = PRECESSING_FORCE.force[0] / BODY.mass;
+    let delta_v = scale(rotate(initial.attitude, v_term), accel);
+    let delta_x = scale(rotate(initial.attitude, x_term), accel);
+    (
+        add(add(initial.position, scale(initial.velocity, time)), delta_x),
+        add(initial.velocity, delta_v),
+    )
+}
+
+#[test]
+fn precessing_body_x_thrust_translation_shows_at_least_second_order() {
+    // The body rate direction changes over the run (I=diag(2,3,3), zero torque),
+    // so the attitude that carries the body-x thrust changes too. The core's
+    // translation step is Simpson's rule on R(q)F/m, so the error here is
+    // truncation, not rounding. The guards check that at every mesh.
+    // converges(..., 2, ...) is the contract's "at least second order" claim.
+    // It bounds the error ratio from above only, so a higher order also passes.
+    let initial = symmetric_initial();
+    let (exact_x, exact_v) = precessing_translation_solution(&initial, DURATION);
+    let accel = norm(PRECESSING_FORCE.force) / BODY.mass;
+    let position_scale = norm(initial.position)
+        + norm(initial.velocity) * DURATION
+        + accel * DURATION * DURATION / 2.0;
+    let velocity_scale = norm(initial.velocity) + accel * DURATION;
+    let mut position_errors = [0.0; 3];
+    let mut velocity_errors = [0.0; 3];
+    for (level, count) in COUNTS.into_iter().enumerate() {
+        let actual = integrate(&BODY, initial, &PRECESSING_FORCE, DURATION, count);
+        position_errors[level] = norm(sub(actual.position, exact_x));
+        velocity_errors[level] = norm(sub(actual.velocity, exact_v));
+        assert!(
+            position_errors[level] > 100.0 * rounding(count, position_scale),
+            "precessing position is rounding dominated at N={count}: errors={position_errors:?}"
+        );
+        assert!(
+            velocity_errors[level] > 100.0 * rounding(count, velocity_scale),
+            "precessing velocity is rounding dominated at N={count}: errors={velocity_errors:?}"
+        );
+    }
+    converges("precessing position", position_errors, 2, position_scale);
+    converges("precessing velocity", velocity_errors, 2, velocity_scale);
+}
+
+#[test]
+fn non_diagonal_inertia_with_torque_matches_closed_form_to_rounding() {
+    // I=[[3,1,0],[1,3,0],[0,0,3]] is symmetric and positive definite, with
+    // eigenvalues 4, 2, 3. Its eigenvector [1,1,0] has eigenvalue 4, so
+    // I [t,t,0] = [4t,4t,0]. Try w(t)=[t,t,0] with tau=[4,4,0]: w x (I w)=0
+    // because the two vectors are parallel, and I w' = I [1,1,0] = [4,4,0] = tau,
+    // so w'=[1,1,0]. With w(0)=0 this gives w(t)=[t,t,0] exactly.
+    // Ignoring the off-diagonal 1s would give diag(3,3,3) and w'=[4/3,4/3,0],
+    // so w(T)=[4T/3,4T/3,0], which the tolerance below rejects.
+    // Along the fixed axis u=[1,1,0]/sqrt(2), |w|=sqrt(2) t, so the angle is
+    // theta(t)=int_0^t sqrt(2) s ds = (sqrt(2)/2) t^2 and
+    // q(t)=[cos(theta/2), sin(theta/2) u_x, sin(theta/2) u_y, 0].
+    // Check: q^-1 q' = (0, |w| u)/2 = (0, w)/2, with q(0)=1.
+    // The body axis never moves, so the core's steps are exact up to rounding
+    // here. This is a rounding-floor agreement check, not an order measurement.
+    let body = Vehicle {
+        inertia: [[3.0, 1.0, 0.0], [1.0, 3.0, 0.0], [0.0, 0.0, 3.0]],
+        ..BODY
+    };
+    let wrench = Wrench {
+        force: [0.0; 3],
+        torque: [4.0, 4.0, 0.0],
+    };
+    let initial = state([0.0; 3], [0.0; 3], IDENTITY, [0.0; 3]);
+    let time = DURATION;
+    let exact_w = [time, time, 0.0];
+    let half = libm::sqrt(2.0) / 4.0 * time * time;
+    let axis = 1.0 / libm::sqrt(2.0);
+    let exact_q = [
+        libm::cos(half),
+        libm::sin(half) * axis,
+        libm::sin(half) * axis,
+        0.0,
+    ];
+    for count in COUNTS {
+        let actual = integrate(&body, initial, &wrench, time, count);
+        vector_close(
+            "non-diagonal angular velocity",
+            actual.angular_velocity,
+            exact_w,
+            rounding(count, norm(exact_w)),
+        );
+        let angle = attitude_error(actual.attitude, exact_q);
+        let tolerance = rounding(count, 1.0);
+        assert!(
+            angle.is_finite() && angle <= tolerance,
+            "non-diagonal attitude: angle={angle:e}, tolerance={tolerance:e}"
+        );
+    }
+}
+
+#[test]
+fn largest_reports_nan_from_any_component() {
+    // largest must not skip NaN: a NaN in any position makes the result NaN.
+    assert!(largest([1.0, f64::NAN, 2.0]).is_nan());
+    assert!(largest([f64::NAN, 0.0, 0.0]).is_nan());
+}
+
+#[test]
+#[should_panic(expected = "single-NaN negative control")]
+fn vector_close_rejects_one_nan_among_finite_components() {
+    // Negative control: two components match exactly, but a NaN in the third must still fail.
+    vector_close(
+        "single-NaN negative control",
+        [1.0, f64::NAN, 2.0],
+        [1.0, 0.0, 2.0],
+        1.0,
+    );
 }
 
 #[test]

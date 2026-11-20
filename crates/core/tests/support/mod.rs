@@ -24,7 +24,17 @@ pub fn state(position: Vec3, velocity: Vec3, attitude: Quat, omega: Vec3) -> Sta
 }
 
 pub fn advance(vehicle: &Vehicle<'_>, input: &State, wrench: &Wrench, dt: f64) -> State {
-    spacebench_core::step(vehicle, input, wrench, dt)
+    let output = spacebench_core::step(vehicle, input, wrench, dt);
+    // Refuse a non-finite state here: a NaN can otherwise slip past a later comparison.
+    let finite = output
+        .position
+        .iter()
+        .chain(&output.velocity)
+        .chain(&output.attitude)
+        .chain(&output.angular_velocity)
+        .all(|component| component.is_finite());
+    assert!(finite, "step returned a non-finite state: {output:?}");
+    output
 }
 
 pub fn integrate(
@@ -62,9 +72,21 @@ pub fn norm(a: Vec3) -> f64 {
     libm::sqrt(dot(a, a))
 }
 
+pub fn cross(a: Vec3, b: Vec3) -> Vec3 {
+    [
+        a[1] * b[2] - a[2] * b[1],
+        a[2] * b[0] - a[0] * b[2],
+        a[0] * b[1] - a[1] * b[0],
+    ]
+}
+
 pub fn largest(a: Vec3) -> f64 {
+    // A NaN fails every comparison, so `abs() > result` would skip it. Return NaN instead.
     let mut result = 0.0;
     for component in a {
+        if component.is_nan() {
+            return f64::NAN;
+        }
         if component.abs() > result {
             result = component.abs();
         }
@@ -117,17 +139,31 @@ pub fn attitude_error(actual: Quat, exact: Quat) -> f64 {
 }
 
 pub fn vector_close(label: &str, actual: Vec3, exact: Vec3, tolerance: f64) {
+    assert!(
+        tolerance.is_finite() && tolerance >= 0.0,
+        "{label}: tolerance={tolerance:e} must be finite and non-negative"
+    );
+    assert!(
+        actual.iter().all(|component| component.is_finite()),
+        "{label}: actual={actual:?} has a non-finite component"
+    );
+    assert!(
+        exact.iter().all(|component| component.is_finite()),
+        "{label}: exact={exact:?} has a non-finite component"
+    );
     let error = largest(sub(actual, exact));
     assert!(
-        error <= tolerance,
+        error.is_finite() && error <= tolerance,
         "{label}: actual={actual:?}, exact={exact:?}, error={error:e}, tolerance={tolerance:e}"
     );
 }
 
 pub fn rounding(count: u32, scale: f64) -> f64 {
-    // 8(N+4)eps is the contract's vector rounding budget. Use Euclidean
-    // scales for invariant/angle checks, allowing 8 more vector-sized
-    // operations (tensor products, rotation, norm and analytic evaluation).
+    // Returns 64(N+4)eps*scale. The contract's straight-push bound is
+    // 8(N+4)eps times the vector magnitude, so 64 is 8x that factor. The
+    // extra 8x is a conservative allowance for derived quantities (tensor
+    // products, rotations, norms, analytic evaluation). An error must clear
+    // 100 times this value before an order is claimed.
     8.0 * 8.0 * (f64::from(count) + 4.0) * f64::EPSILON * scale
 }
 
