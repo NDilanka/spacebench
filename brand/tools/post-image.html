@@ -1,0 +1,354 @@
+<!doctype html>
+<html lang="en" data-theme="light" data-sim="dock">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SpaceBench post image</title>
+<link rel="stylesheet" href="../tokens/tokens.css">
+<link rel="stylesheet" href="../css/brand.css">
+<style>
+/* Type a line, get a picture of it set in SB Display. Variants by query, for the exporter:
+   ?text=Six%20axes.%0A*One%20attempt.*&sim=parent|dock|landing&ground=plume-ink|plume-film|ink|film|field&size=wide|square|tall&plate=1&caption=... */
+.pi{max-width:1480px;margin:0 auto;padding:40px 40px 72px}
+.pi__head{display:flex;justify-content:space-between;align-items:flex-end;gap:32px;padding-bottom:20px;border-bottom:1px solid var(--sb-fg)}
+.pi__head .sb-logo{height:30px}
+.pi__head p{margin:0;max-width:44em;color:var(--sb-fg-2);text-wrap:pretty}
+.pi__grid{display:grid;grid-template-columns:372px minmax(0,1fr);gap:40px;margin-top:32px;align-items:start}
+.pi__controls{display:grid;gap:22px}
+.pi__f{display:grid;gap:8px;border:0;margin:0;padding:0;min-width:0}
+.pi__f>legend,.pi__f>label{padding:0;font:var(--sb-type-label);letter-spacing:var(--sb-track-label);text-transform:uppercase;color:var(--sb-fg-2)}
+.pi__f>legend{margin-bottom:8px}
+.pi textarea,.pi input[type=text]{width:100%;border:1px solid var(--sb-line-strong);border-radius:var(--sb-radius-2);background:var(--sb-surface);color:var(--sb-fg);padding:10px 12px;font:500 15px/1.4 var(--sb-font-sans);letter-spacing:-.005em;resize:vertical}
+.pi textarea:focus-visible,.pi input:focus-visible,.pi button:focus-visible{outline:2px solid var(--sb-accent);outline-offset:2px}
+.pi .hint{margin:0;font:var(--sb-type-small);color:var(--sb-fg-2);text-wrap:pretty}
+.pi .hint code{font:500 12px/1 var(--sb-font-mono);color:var(--sb-fg)}
+.pi .sb-tabs{flex-wrap:wrap;justify-self:start}
+.pi .sb-tabs button:disabled{opacity:.4;cursor:default}
+.pi__go{display:flex;flex-wrap:wrap;gap:8px}
+.pi__go .sb-btn:disabled{opacity:.4;cursor:default}
+.pi__status{margin:0;min-height:2.9em;font:var(--sb-type-small);color:var(--sb-fg-2)}
+.pi__status[data-bad]{color:var(--sb-alert)}
+.pi__stage{display:grid;gap:12px;position:sticky;top:24px}
+.pi__stage canvas{display:block;width:100%;height:auto;max-height:78vh;object-fit:contain;object-position:left top}
+.pi__stage[data-size=square] canvas,.pi__stage[data-size=tall] canvas{width:auto;max-width:100%}
+.pi__sig{margin-top:56px;padding-top:20px;border-top:1px solid var(--sb-fg);display:grid;grid-template-columns:372px minmax(0,1fr);gap:40px}
+.pi__sig h2{margin:0 0 10px}
+.pi__sig p{margin:0 0 10px;color:var(--sb-fg-2);text-wrap:pretty}
+.pi__sig table{width:100%;border-collapse:collapse}
+.pi__sig td{padding:12px 16px 12px 0;border-top:1px solid var(--sb-line);vertical-align:middle}
+.pi__sig tr:last-child td{border-bottom:1px solid var(--sb-line)}
+.pi__sig td.s{font:500 22px/1.2 "Segoe UI", system-ui, -apple-system, Roboto, sans-serif;white-space:nowrap}
+.pi__sig td.n{color:var(--sb-fg-2);font:var(--sb-type-small)}
+.pi__sig td:last-child{text-align:right;padding-right:0}
+@media (max-width:980px){.pi{padding:24px 20px 56px}.pi__grid,.pi__sig{grid-template-columns:1fr}.pi__stage{position:static}.pi__head{flex-direction:column;align-items:flex-start}}
+</style>
+</head>
+<body class="sb">
+<main class="pi">
+  <header class="pi__head">
+    <div><span data-sb-logo="lockup"></span><h1 class="sb-h1" style="margin-top:22px">Post image</h1></div>
+    <p>X sets every post in its own typeface, so the brand's lettering can only travel as a picture. Type a line here and download it set in <b>SB Display</b>, the cut letters of the wordmark. Attach the picture to the post and paste the alt text.</p>
+  </header>
+
+  <div class="pi__grid">
+    <form class="pi__controls" id="form" onsubmit="return false">
+      <div class="pi__f"><label for="text">Line</label>
+        <textarea id="text" rows="4" spellcheck="true"></textarea>
+        <p class="hint">Enter starts a new line. <code>*Stars*</code> set the second tone. <code>:sb:</code> <code>:dock:</code> <code>:landing:</code> set the mark.</p></div>
+      <fieldset class="pi__f"><legend>Simulation</legend><div class="sb-tabs" data-key="sim">
+        <button type="button" data-v="parent">Parent</button><button type="button" data-v="dock">Dock</button><button type="button" data-v="landing">Landing</button></div></fieldset>
+      <fieldset class="pi__f"><legend>Ground</legend><div class="sb-tabs" data-key="ground">
+        <button type="button" data-v="plume-ink">Plume, ink</button><button type="button" data-v="plume-film">Plume, film</button><button type="button" data-v="ink">Ink</button><button type="button" data-v="film">Film</button><button type="button" data-v="field">Field</button></div></fieldset>
+      <fieldset class="pi__f"><legend>Size</legend><div class="sb-tabs" data-key="size">
+        <button type="button" data-v="wide">16:9</button><button type="button" data-v="square">1:1</button><button type="button" data-v="tall">4:5</button></div></fieldset>
+      <fieldset class="pi__f"><legend>Plate with the mark</legend><div class="sb-tabs" data-key="plate">
+        <button type="button" data-v="1">On</button><button type="button" data-v="0">Off</button></div></fieldset>
+      <div class="pi__f"><label for="caption">Small line</label>
+        <input type="text" id="caption" maxlength="60" autocomplete="off"></div>
+      <div class="pi__go">
+        <button type="button" class="sb-btn" id="download">Download PNG</button>
+        <button type="button" class="sb-btn sb-btn--ghost" id="copyimg">Copy image</button>
+        <button type="button" class="sb-btn sb-btn--ghost" id="copyalt">Copy alt text</button>
+      </div>
+      <p class="pi__status" id="status" role="status"></p>
+    </form>
+    <div class="pi__stage" id="stage">
+      <canvas id="c" width="1600" height="900" role="img" aria-label="Preview of the post image"></canvas>
+      <div class="sb-meta"><span id="dims"></span><span>PNG · sRGB</span></div>
+    </div>
+  </div>
+
+  <section class="pi__sig" aria-labelledby="sig-h">
+    <div>
+      <h2 class="sb-h3" id="sig-h">Plain-text signature</h2>
+      <p>For the places a picture cannot go: a display name, a bio, the end of a post. These are ordinary Unicode characters, so every device shows them in its own font.</p>
+      <p>The half disc turns with the simulation, as the mark does. It is a stand-in and not the mark. A screen reader may read it aloud by its Unicode name, for example "circle with upper half black", so use it once, at the start or the end, and never inside a sentence.</p>
+    </div>
+    <table id="sigs"><tbody></tbody></table>
+  </section>
+</main>
+
+<script src="../js/sb-tokens.js"></script>
+<script src="../js/sb-logo.js"></script>
+<script src="plume.js"></script>
+<script>
+(function () {
+  'use strict';
+  var T = SBTokens, $ = function (i) { return document.getElementById(i); };
+  var SIZES = { wide: [1600, 900, '16:9'], square: [1080, 1080, '1:1'], tall: [1080, 1350, '4:5'] };
+  var NAMES = { parent: 'SpaceBench', dock: 'SpaceBench Dock', landing: 'SpaceBench Landing' };
+  var DEFAULTS = {
+    parent: { text: 'Models fly.\n*Physics scores.*', caption: 'Benchmark family' },
+    dock: { text: 'Six axes.\n*One attempt.*', caption: 'Simulation 01 · In build' },
+    landing: { text: 'The pad\n*is next.*', caption: 'Simulation 02 · In design' }
+  };
+  var SIGS = [['◓ SpaceBench', 'Parent, 0 deg'], ['◑ SpaceBench Dock', 'Dock, 90 deg'], ['◒ SpaceBench Landing', 'Landing, 180 deg']];
+  var FACE = '"SB Display"', MONO = '"Geist Mono"';
+  /* The cut letters hold from a 48 px cap height, which is a 68 px font size. */
+  var MIN_SIZE = 68, CAP = 0.71, DESC = 0.22, MARK_RISE = 0.13;
+
+  var q = new URLSearchParams(location.search);
+  var sim0 = NAMES[q.get('sim')] ? q.get('sim') : 'dock';
+  var S = {
+    sim: sim0,
+    ground: q.get('ground') || 'plume-ink',
+    size: SIZES[q.get('size')] ? q.get('size') : 'wide',
+    plate: q.get('plate') == null ? '1' : (q.get('plate') === '1' ? '1' : '0'),
+    text: q.get('text') == null ? DEFAULTS[sim0].text : q.get('text'),
+    caption: q.get('caption') == null ? DEFAULTS[sim0].caption : q.get('caption')
+  };
+  var IMG = {}, last = { fits: true };
+
+  function colours() {
+    var dark = S.ground === 'ink' || S.ground === 'plume-ink', plume = S.ground.indexOf('plume') === 0;
+    var th = T.theme[dark ? 'dark' : 'light'], sm = T.sim[S.sim][dark ? 'dark' : 'light'];
+    if (S.ground === 'field' && S.sim !== 'parent') {
+      /* One full field of the accent. Type on it is the neutral that reads best; the second tone is the other neutral. */
+      var f = T.sim[S.sim].light, fg = f['accent-contrast'];
+      return { dark: false, plume: false, field: true, bg: f.accent, fg: fg, tone: fg === '#FFFFFF' ? T.theme.light.fg : '#FFFFFF', mark: fg, name: fg };
+    }
+    var parent = S.sim === 'parent';
+    return { dark: dark, plume: plume, field: false, bg: th.bg, fg: th.fg,
+      /* on the plume field the gray second tone steps up one grey, or it sinks into the texture */
+      tone: parent ? (plume ? th['fg-2'] : th['fg-3']) : sm.accent,
+      mark: parent ? th.fg : sm.accent, name: parent ? (plume ? th['fg-2'] : th['fg-3']) : sm.accent };
+  }
+
+  /* '*' toggles the second tone. Returns the plain text and the ranges that take it. */
+  function parse(line) {
+    var plain = '', runs = [], on = false, start = 0;
+    for (var i = 0; i < line.length; i++) {
+      if (line[i] === '*') { if (plain.length > start) runs.push([start, plain.length, on]); on = !on; start = plain.length; }
+      else plain += line[i];
+    }
+    if (plain.length > start) runs.push([start, plain.length, on]);
+    return { plain: plain, runs: runs };
+  }
+  function slice(p, a, b) {
+    var runs = [];
+    p.runs.forEach(function (r) { var x = Math.max(r[0], a), y = Math.min(r[1], b); if (y > x) runs.push([x - a, y - a, r[2]]); });
+    return { plain: p.plain.slice(a, b), runs: runs };
+  }
+  function wrap(ctx, para, width) {
+    var p = parse(para), out = [], re = /\S+/g, m, words = [];
+    while ((m = re.exec(p.plain))) words.push([m.index, m.index + m[0].length]);
+    if (!words.length) return [{ plain: '', runs: [] }];
+    var a = words[0][0], b = words[0][1];
+    for (var i = 1; i < words.length; i++) {
+      if (ctx.measureText(p.plain.slice(a, words[i][1])).width <= width) b = words[i][1];
+      else { out.push(slice(p, a, b)); a = words[i][0]; b = words[i][1]; }
+    }
+    out.push(slice(p, a, b));
+    return out;
+  }
+  function setFace(ctx, size) { ctx.font = '800 ' + size + 'px ' + FACE; ctx.letterSpacing = '0px'; ctx.fontKerning = 'normal'; ctx.textBaseline = 'alphabetic'; }
+
+  /* The largest size at which every line fits the box. The lines break where they were typed for as long
+     as that costs no more than a third of the size; past that, long lines wrap. */
+  function fit(ctx, text, w, h, max) {
+    var paras = text.replace(/\r/g, '').split('\n');
+    while (paras.length > 1 && !paras[paras.length - 1].trim()) paras.pop();
+    function pass(wrapping, floor) {
+      var best = null;
+      for (var size = max; size >= floor; size -= 2) {
+        setFace(ctx, size);
+        var lines = [];
+        paras.forEach(function (p) { lines = lines.concat(wrap(ctx, p, wrapping ? w : Infinity)); });
+        var wide = Math.max.apply(null, lines.map(function (l) { return ctx.measureText(l.plain).width; }));
+        var rise = /:(sb|dock|landing):/.test(lines[0].plain) ? MARK_RISE * size : 0;
+        var tall = rise + CAP * size + (lines.length - 1) * size + DESC * size;
+        best = { size: size, lines: lines, rise: rise, height: tall, fits: wide <= w + 0.5 && tall <= h };
+        if (best.fits) break;
+      }
+      return best;
+    }
+    var typed = pass(false, Math.max(MIN_SIZE, Math.round(max * 0.66)));
+    return typed.fits ? typed : pass(true, MIN_SIZE);
+  }
+
+  function cover(ctx, img, x, y, w, h) {
+    var k = Math.max(w / img.naturalWidth, h / img.naturalHeight), sw = w / k, sh = h / k;
+    ctx.drawImage(img, (img.naturalWidth - sw) / 2, (img.naturalHeight - sh) / 2, sw, sh, x, y, w, h);
+  }
+  function lockup(ctx, x, y, h, c) {
+    var lk = SBLogo.data.lockups[S.sim].horizontal, k = h / lk.viewBox[3];
+    ctx.save(); ctx.translate(x, y); ctx.scale(k, k);
+    ctx.fillStyle = c.mark; ctx.fill(new Path2D(lk.mark));
+    ctx.translate(lk.tx, lk.ty);
+    ctx.fillStyle = c.fg; ctx.fill(new Path2D(lk.a));
+    ctx.fillStyle = c.name; ctx.fill(new Path2D(lk.b));
+    ctx.restore();
+  }
+  /* The plate of templates/template.js, drawn on canvas: a square of film over the ground, the mark a window
+     through it onto the plume field of the other ground. */
+  function plate(ctx, x, y, ps, c) {
+    ctx.fillStyle = c.dark ? 'rgba(13,17,26,.9)' : 'rgba(221,225,230,.88)';
+    ctx.fillRect(x, y, ps, ps);
+    var ms = ps * 0.7, m0 = (ps - ms) / 2, win = new Path2D();
+    win.addPath(new Path2D(SBLogo.data.lockups[S.sim].mark.mark), new DOMMatrix().translate(x + m0, y + m0).scale(ms / 120));
+    ctx.save(); ctx.clip(win);
+    cover(ctx, IMG[c.dark ? 'squareFilm' : 'squareInk'], x, y, ps, ps);
+    if (S.sim !== 'parent') {
+      ctx.globalCompositeOperation = c.dark ? 'multiply' : 'screen';
+      ctx.fillStyle = T.sim[S.sim][c.dark ? 'dark' : 'light'].accent;
+      ctx.fillRect(x, y, ps, ps);
+    }
+    ctx.restore();
+  }
+
+  function render() {
+    var cv = $('c'), W = SIZES[S.size][0], H = SIZES[S.size][1], base = Math.min(W, H), c = colours();
+    cv.width = W; cv.height = H;
+    var ctx = cv.getContext('2d');
+    ctx.fillStyle = c.bg; ctx.fillRect(0, 0, W, H);
+    if (c.plume) cover(ctx, IMG[c.dark ? 'sheetInk' : 'sheetFilm'], 0, 0, W, H);
+
+    var pad = Math.round(base * 0.078), logoH = Math.round(base * 0.062), capSize = Math.max(11, Math.round(base * 0.0165));
+    var hasPlate = S.plate === '1' && !c.field, wide = S.size === 'wide';
+    var box = { x: pad, y: pad + logoH + Math.round(base * 0.05), r: W - pad, b: H - pad - (S.caption.trim() ? capSize + Math.round(base * 0.045) : 0) };
+    if (hasPlate) {
+      var ps = Math.round(wide ? H * 0.44 : W * 0.3), px = W - pad - ps, py = wide ? Math.round((H - ps) / 2) : pad;
+      plate(ctx, px, py, ps, c);
+      if (wide) box.r = px - Math.round(W * 0.04);
+      else {
+        box.y = py + ps + Math.round(base * 0.05);
+        /* beside the plate, the lockup gives way: it shrinks until a plate margin separates them */
+        var vb = SBLogo.data.lockups[S.sim].horizontal.viewBox;
+        logoH = Math.min(logoH, Math.floor((px - pad - Math.round(base * 0.05)) * vb[3] / vb[2]));
+      }
+    }
+    lockup(ctx, pad - logoH * 7 / 120, pad, logoH, c);
+
+    var f = fit(ctx, S.text, box.r - box.x, box.b - box.y, Math.round(base * 0.19));
+    setFace(ctx, f.size);
+    var y = box.y + Math.max(0, (box.b - box.y - f.height) / 2) + f.rise + CAP * f.size;
+    if (f.fits) f.lines.forEach(function (l, i) {
+      l.runs.forEach(function (r) {
+        var run = l.plain.slice(r[0], r[1]);
+        /* measured as a whole and then by the run, so kerning across a change of tone is kept */
+        var x = box.x + ctx.measureText(l.plain.slice(0, r[1])).width - ctx.measureText(run).width;
+        ctx.fillStyle = r[2] ? c.tone : c.fg;
+        ctx.fillText(run, x, y + i * f.size);
+      });
+    });
+    if (S.caption.trim()) {
+      ctx.font = '500 ' + capSize + 'px ' + MONO; ctx.letterSpacing = (capSize * 0.09).toFixed(2) + 'px';
+      ctx.fillStyle = c.fg; ctx.fillText(S.caption.trim().toUpperCase(), pad, H - pad);
+    }
+
+    last = { fits: f.fits, size: f.size, lines: f.lines.length, width: W, height: H, cap: Math.round(CAP * f.size), captionPx: capSize };
+    var st = $('status');
+    if (!S.text.trim()) { st.removeAttribute('data-bad'); st.textContent = 'Nothing typed. The picture carries the lockup alone.'; }
+    else if (f.fits) { st.removeAttribute('data-bad'); st.textContent = 'Set at ' + f.size + ' px, cap height ' + last.cap + ' px, on ' + f.lines.length + (f.lines.length === 1 ? ' line.' : ' lines.'); }
+    else { st.setAttribute('data-bad', ''); st.textContent = 'Too long. The line does not fit at ' + MIN_SIZE + ' px, the smallest size at which the cuts stay open. Shorten it, or turn the plate off.'; }
+    ['download', 'copyimg'].forEach(function (id) { $(id).disabled = !f.fits; });
+    $('dims').textContent = W + ' × ' + H + ' px · ' + SIZES[S.size][2];
+    $('stage').dataset.size = S.size;
+    document.documentElement.dataset.sim = S.sim;
+    document.querySelectorAll('.sb-tabs').forEach(function (tabs) {
+      tabs.querySelectorAll('button').forEach(function (b) { b.setAttribute('aria-pressed', String(S[tabs.dataset.key] === b.dataset.v)); });
+    });
+    var parent = S.sim === 'parent';
+    document.querySelector('[data-key=ground] [data-v=field]').disabled = parent;
+    document.querySelectorAll('[data-key=plate] button').forEach(function (b) { b.disabled = c.field; });
+    cv.setAttribute('aria-label', 'Preview: ' + altText());
+    document.body.dataset.ready = '1';
+  }
+
+  function altText() {
+    var t = S.text.replace(/\*/g, '').replace(/:(sb|dock|landing):/g, '').split('\n').map(function (l) { return l.trim(); }).filter(Boolean).join(' ').replace(/\s+/g, ' ');
+    var cap = S.caption.trim();
+    return (t ? t + (/[.!?]$/.test(t) ? ' ' : '. ') : '') + NAMES[S.sim] + (cap ? ', ' + cap.toLowerCase() : '') + '.';
+  }
+  function fileName() {
+    var slug = S.text.replace(/\*/g, '').replace(/:(sb|dock|landing):/g, '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 40);
+    return 'spacebench-post-' + (slug || S.sim) + '-' + SIZES[S.size][0] + 'x' + SIZES[S.size][1] + '.png';
+  }
+  function say(msg) { var st = $('status'); st.removeAttribute('data-bad'); st.textContent = msg; }
+  function copyText(text, done) {
+    var ok = function () { say(done); };
+    var fallback = function () {
+      var ta = document.createElement('textarea'); ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+      document.body.appendChild(ta); ta.select();
+      try { document.execCommand('copy'); ok(); } catch (e) { say('Could not copy. Select the text and copy it by hand.'); }
+      ta.remove();
+    };
+    if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text).then(ok, fallback); else fallback();
+  }
+
+  $('download').addEventListener('click', function () {
+    $('c').toBlob(function (blob) {
+      var a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = fileName();
+      document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(function () { URL.revokeObjectURL(a.href); }, 4000);
+      say('Saved ' + a.download + '. Paste the alt text when you attach it.');
+    }, 'image/png');
+  });
+  $('copyimg').addEventListener('click', function () {
+    if (!(navigator.clipboard && window.ClipboardItem)) { say('This browser cannot copy pictures. Use Download PNG.'); return; }
+    $('c').toBlob(function (blob) {
+      navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]).then(
+        function () { say('Picture copied. Paste it into the post.'); },
+        function () { say('The browser refused the copy. Use Download PNG.'); });
+    }, 'image/png');
+  });
+  $('copyalt').addEventListener('click', function () { copyText(altText(), 'Alt text copied: ' + altText()); });
+
+  document.querySelectorAll('.sb-tabs button').forEach(function (b) {
+    b.addEventListener('click', function () {
+      var key = b.parentNode.dataset.key, was = S.sim;
+      S[key] = b.dataset.v;
+      if (key === 'sim') {
+        /* an untouched default follows the simulation; anything typed stays */
+        if (S.text === DEFAULTS[was].text) $('text').value = S.text = DEFAULTS[S.sim].text;
+        if (S.caption === DEFAULTS[was].caption) $('caption').value = S.caption = DEFAULTS[S.sim].caption;
+        if (S.sim === 'parent' && S.ground === 'field') S.ground = 'film';
+      }
+      render();
+    });
+  });
+  $('text').addEventListener('input', function () { S.text = this.value; render(); });
+  $('caption').addEventListener('input', function () { S.caption = this.value; render(); });
+
+  var body = $('sigs').tBodies[0];
+  SIGS.forEach(function (s) {
+    var tr = body.insertRow(), a = tr.insertCell(), b = tr.insertCell(), c = tr.insertCell(), btn = document.createElement('button');
+    a.className = 's'; a.textContent = s[0]; b.className = 'n'; b.textContent = s[1];
+    btn.type = 'button'; btn.className = 'sb-btn sb-btn--ghost'; btn.textContent = 'Copy';
+    btn.addEventListener('click', function () { copyText(s[0], 'Copied: ' + s[0]); });
+    c.appendChild(btn);
+  });
+
+  if (S.sim === 'parent' && S.ground === 'field') S.ground = 'film';
+  $('text').value = S.text; $('caption').value = S.caption;
+  SBLogo.mount();
+  window.SBPost = { state: S, render: render, altText: altText, fileName: fileName, status: function () { return last; } };
+  Promise.all(Object.keys(SBPlume).map(function (k) {
+    return new Promise(function (ok, bad) { var i = new Image(); i.onload = function () { IMG[k] = i; ok(); }; i.onerror = bad; i.src = SBPlume[k]; });
+  }).concat([document.fonts.load('800 100px ' + FACE, 'SpaceBench:sb:'), document.fonts.load('500 16px ' + MONO, 'A')])).then(render, function () {
+    var st = $('status'); st.setAttribute('data-bad', ''); st.textContent = 'A font or a ground did not load. Open this page from inside the brand folder, with fonts/ and tools/plume.js beside it.';
+  });
+})();
+</script>
+</body>
+</html>

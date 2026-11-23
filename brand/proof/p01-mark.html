@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><title>Proof 01. The mark</title>
+<link rel="stylesheet" href="proof.css">
+<style>
+.sheet { width: 1600px; height: 1890px; }
+.stone { left: 40px; top: 76px; width: 560px; height: 1774px; background: linear-gradient(155deg, #D3D7DD 0%, #BEC3CB 45%, #A9AFB9 100%); overflow: hidden; }
+.stone .grain { opacity: .9; }
+.stone .big { left: 40px; top: 420px; }
+.right { left: 648px; top: 76px; width: 912px; }
+h1 { font: 700 54px/1.0 var(--sans); letter-spacing: -.045em; max-width: 760px; }
+h1 span { color: var(--fg-3); }
+.lead { font: 400 17px/1.45 var(--sans); color: var(--fg-2); max-width: 560px; margin-top: 18px; letter-spacing: -.005em; }
+.row { margin-top: 34px; border-top: 1px solid var(--line); padding-top: 12px; }
+.row > .mono { display: flex; justify-content: space-between; }
+.cells { display: flex; gap: 14px; margin-top: 14px; }
+.cell { flex: 1; background: var(--paper-2); height: 190px; position: relative; display: flex; align-items: center; justify-content: center; }
+.cell .mono { position: absolute; left: 12px; bottom: 10px; }
+.cell.k { background: var(--ink); color: var(--on-ink); }
+.cell.v { background: var(--violet); color: #fff; }
+.cell.o { background: var(--orange); color: var(--ink); }
+.cell.st { background: #BEC3CB; }
+.plate { width: 100%; height: 100%; border-radius: 12px; background: linear-gradient(160deg, #E2E5EA, #B5BBC5); box-shadow: inset 0 0 0 1px #8D95A3, inset 0 2px 0 #fff, 0 2px 0 #7C8493; position: relative; display: flex; align-items: center; gap: 18px; padding: 0 30px; }
+.plate i { position: absolute; width: 11px; height: 11px; border-radius: 50%; background: radial-gradient(circle at 35% 30%, #fff, #8D95A3 70%); box-shadow: 0 0 0 1px #6B7387; }
+.plate .no { font: 600 38px/1 var(--mono); letter-spacing: .02em; color: #7C8493; text-shadow: 1px 1px 0 #fff, -1px -1px 0 #454C5B; }
+.plate .sm { font: 600 11px/1 var(--mono); letter-spacing: .16em; color: #6B7387; text-shadow: 1px 1px 0 #fff; margin-bottom: 9px; }
+.wm { display: flex; align-items: center; gap: 22px; height: 132px; border-bottom: 1px solid var(--line); }
+.wm canvas { flex: none; }
+.lock { display: flex; align-items: center; gap: 14px; }
+.locks { display: flex; gap: 14px; margin-top: 14px; }
+.locks .cell { min-width: 0; overflow: hidden; }
+.locks .cell { height: 150px; }
+.hand { color: var(--violet); }
+.wm .tag { width: 96px; flex: none; }
+.wm .note { margin-left: auto; width: 200px; font: 400 12.5px/1.4 var(--sans); color: var(--fg-2); }
+</style></head>
+<body><div class="sheet" id="sheet">
+  <div class="hdr mono"><span>SpaceBench · Proof round</span><span class="dim">Proof No. 01 · The mark</span><span class="dim">01/09</span><span class="dim">Trial. Not yet the standard</span></div>
+
+  <div class="abs stone">
+    <div class="abs mono" style="left:24px;top:22px;color:#454C5B">Bench mark · cut version</div>
+    <div class="abs mono" style="right:24px;top:22px;color:#454C5B">SB-D4-0017</div>
+    <div class="abs big" id="big"></div>
+    <svg class="abs" style="left:0;top:120px" width="560" height="1284" id="notes"></svg>
+    <div class="abs hand" style="left:372px;top:356px;font-size:40px">the datum</div>
+    <div class="abs hand" style="left:36px;top:932px;font-size:40px;width:230px">three cuts that<br>meet at a point</div>
+    <div class="abs hand" style="left:402px;top:588px;font-size:36px;width:150px">the last<br>0.10 m</div>
+    <div class="abs" style="left:24px;right:24px;bottom:24px;color:#2A2F3B">
+      <div style="font:700 30px/1 var(--sans);letter-spacing:-.03em">bench <span style="font:400 17px var(--mono);letter-spacing:0;color:#5A6272">/bɛntʃ/ n.</span></div>
+      <div style="font:400 15px/1.5 var(--sans);margin-top:12px;max-width:470px"><b>1</b> a table where things are tested. <b>2</b> <i>surveying</i> bench mark: a cut in stone that fixes a known height. <b>3</b> where the judges sit. <b>4</b> where a player sits when not picked to play.</div>
+    </div>
+    <div class="grain"></div>
+  </div>
+
+  <div class="abs right">
+    <h1>Three cuts that meet at a point, <span>under a line.</span></h1>
+    <p class="lead">Surveyors cut this into walls and bridges to fix a known height. The line is the datum. For SpaceBench the line is the docking plane, the arrow is the approach, and the gap is the last distance before contact.</p>
+
+    <div class="row"><div class="mono"><span>Five versions</span><span class="dim">Solid · Cut · Stencil · Outline · Dot</span></div>
+      <div class="cells" id="versions"></div></div>
+
+    <div class="row"><div class="mono"><span>One arrow, turned for each simulation</span><span class="dim">Parent 0° · Dock 90° · Landing 180°</span></div>
+      <div class="cells" id="sims"></div></div>
+
+    <div class="row"><div class="mono"><span>Emblems and the bracket plate</span><span class="dim">4 = reticle · 3 = petals · 12 = hooks</span></div>
+      <div class="cells" id="emblems"></div></div>
+
+    <div class="row"><div class="mono"><span>Wordmark trials</span><span class="dim">Geist 800, two tones, with one cut taken from the mark</span></div>
+      <div class="wm"><div class="tag mono dim">W-A<br>Slot</div><canvas id="wa"></canvas><div class="note">A straight slot through every closed counter, as wide as the gap in the mark. How hardware is lettered.</div></div>
+      <div class="wm"><div class="tag mono dim">W-B<br>Chisel</div><canvas id="wb"></canvas><div class="note">Two wedge cuts per counter that taper to a point, the same stroke as the arrow.</div></div>
+      <div class="wm"><div class="tag mono dim">W-0<br>Today</div><div style="font:600 84px/1 Geist;letter-spacing:-.045em">Space<span style="color:var(--fg-3)">Bench</span></div><div class="note">The current wordmark, for comparison.</div></div>
+    </div>
+    <div class="row"><div class="mono"><span>Lockups</span><span class="dim">Mark · name · simulation in its accent</span></div>
+      <div class="locks"><div class="cell"><div class="lock" id="l1"></div></div><div class="cell k"><div class="lock" id="l2"></div></div></div>
+      <div class="locks"><div class="cell v"><div class="lock" id="l3"></div></div><div class="cell o"><div class="lock" id="l4"></div></div></div>
+    </div>
+  </div>
+  <div class="grain" style="opacity:.16"></div>
+</div>
+<script src="proof.js"></script>
+<script>
+(async function () {
+  await document.fonts.load('800 100px Geist'); await document.fonts.load('700 100px Geist'); await document.fonts.ready;
+  var $ = function (id) { return document.getElementById(id); };
+  $('big').innerHTML = SBP.mark({ variant: 'cut', size: 480, ground: '#BEC3CB', dark: '#2F3541', light: '#FFFFFF' });
+  $('notes').innerHTML = SBP.pen.line(370, 262, 300, 388, 3, { arrow: true, bow: -0.12 }) + SBP.pen.line(150, 806, 205, 700, 5, { arrow: true, bow: 0.1 }) + SBP.pen.line(412, 470, 300, 432, 7, { arrow: true, bow: 0.1 }) + SBP.pen.ring(280, 424, 34, 17, 9);
+
+  var vs = [['solid', 'Solid', ''], ['cut', 'Cut', 'st'], ['stencil', 'Stencil', ''], ['outline', 'Outline', 'k'], ['dot', 'Dot', 'k']];
+  $('versions').innerHTML = vs.map(function (v) { return '<div class="cell ' + v[2] + '">' + SBP.mark({ variant: v[0], size: 118, ground: '#BEC3CB', dark: '#2F3541', ghost: true }) + '<span class="mono s">' + v[1] + '</span></div>'; }).join('');
+  $('sims').innerHTML = [[0, 'SpaceBench', ''], [90, 'Dock', 'v'], [180, 'Landing', 'o']].map(function (v) { return '<div class="cell ' + v[2] + '">' + SBP.mark({ size: 118, rot: v[0] }) + '<span class="mono s">' + v[1] + '</span></div>'; }).join('') +
+    '<div class="cell k">' + SBP.mark({ size: 118, rot: 90, fg: '#8E6BFF' }) + '<span class="mono s">Dock on ink</span></div><div class="cell">' + [64, 40, 24, 16].map(function (s) { return '<span style="margin:0 7px">' + SBP.mark({ size: s }) + '</span>'; }).join('') + '<span class="mono s">64 · 40 · 24 · 16</span></div>';
+  $('emblems').innerHTML = '<div class="cell">' + SBP.emblem({ n: 4, size: 150, dot: 3.5 }) + '<span class="mono s">Reticle</span></div>' +
+    '<div class="cell">' + SBP.emblem({ n: 3, size: 150, ring: 86, ringW: 4, len: 62, gap: 8, phase: 180 }) + '<span class="mono s">Petals</span></div>' +
+    '<div class="cell k">' + SBP.emblem({ n: 3, size: 150, ring: 70, ringW: 3, hooks: 12, len: 50, gap: 7, phase: 180, fg: '#8E6BFF' }) + '<span class="mono s">Port</span></div>' +
+    '<div class="cell" style="flex:2.1;background:none"><div class="plate"><i style="left:10px;top:10px"></i><i style="right:10px;top:10px"></i><i style="left:10px;bottom:10px"></i><i style="right:10px;bottom:10px"></i>' +
+    SBP.mark({ variant: 'cut', size: 104, ground: '#C9CED6', dark: '#3A4150' }) + '<div><div class="sm" style="white-space:nowrap">SB · FLIGHT BRACKET</div><div class="no">D4·0017</div></div></div></div>';
+
+  SBP.stencil($('wa'), 'SpaceBench', { size: 84, weight: 800, slot: 0.055, split: ['Space', '#0B0E16', '#7C8493'] });
+  SBP.stencil($('wb'), 'SpaceBench', { size: 84, weight: 800, slot: 0.055, wedge: 2.2, split: ['Space', '#0B0E16', '#7C8493'] });
+  function lock(id, word, rot, c1, c2, c3) {
+    var cv = document.createElement('canvas'), sp = word.indexOf(' ') > 0 ? ['Space', c1, c2, 'SpaceBench ', c3] : ['Space', c1, c2];
+    var sz = word.length > 16 ? 31 : word.length > 10 ? 37 : 50;
+    SBP.stencil(cv, word, { size: sz, weight: 800, slot: 0.055, split: sp });
+    $(id).innerHTML = '<span style="color:' + (c3 || c1) + '">' + SBP.mark({ size: sz * 1.16, rot: rot }) + '</span>'; $(id).appendChild(cv);
+  }
+  lock('l1', 'SpaceBench', 0, '#0B0E16', '#7C8493');
+  lock('l2', 'SpaceBench Dock', 90, '#EEF0F4', '#7C8493', '#8E6BFF');
+  lock('l3', 'SpaceBench Dock', 90, '#FFFFFF', '#CBBDFF', '#FFFFFF');
+  lock('l4', 'SpaceBench Landing', 180, '#0B0E16', '#752600', '#0B0E16');
+  document.body.dataset.ready = '1';
+})();
+</script>
+</body></html>

@@ -1,122 +1,120 @@
 """Build the SpaceBench logo suite.
 
 Geometry is defined once here. Outputs:
-  brand/logo/svg/*.svg      static files with fixed colours
+  brand/logo/svg/*.svg      static files with fixed colours, true paths, no masks
   brand/js/sb-logo.js       the same geometry for inline, themeable use on the web
   brand/logo/geometry.json  numbers used by the construction sheet
+Needs: pip install fonttools uharfbuzz skia-pathops brotli
 """
-import io, json, math, os
+import io, json, math, os, sys
 from fontTools.ttLib import TTFont
 from fontTools.varLib.instancer import instantiateVariableFont
 from fontTools.pens.svgPathPen import SVGPathPen
 from fontTools.pens.transformPen import TransformPen
 from fontTools.pens.boundsPen import BoundsPen
 import uharfbuzz as hb
+import pathops
 
 HERE = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(0, HERE)
+from cuts import CUTS, cut
 BRAND = os.path.normpath(os.path.join(HERE, ".."))
 SVG_DIR = os.path.join(BRAND, "logo", "svg")
 os.makedirs(SVG_DIR, exist_ok=True)
 
 # ---------------------------------------------------------------- colours (match tokens)
-INK, PAPER, WHITE = "#121211", "#F3F3F1", "#FFFFFF"
-TONE_ON_PAPER, TONE_ON_INK = "#8A8A84", "#7A7A74"
+INK, PAPER, WHITE = "#090C13", "#ECEEF1", "#FFFFFF"
+TONE_ON_PAPER, TONE_ON_INK = "#7C8493", "#6B7387"
 VIOLET, VIOLET_ON_INK = "#6B3BFF", "#8E6BFF"
 ORANGE, ORANGE_ON_INK = "#FF5A0A", "#FF7A33"
 
-# ---------------------------------------------------------------- mark geometry
-C = 120.0          # canvas: 8 x 8 modules of 15
-T = 15.0           # stroke: one module
-M = 15.0           # clearance: one module on every side
-BAR_Y0, BAR_Y1 = 15.0, 30.0
-GAP = 7.5          # contact gap between datum and arrow: half a module
-AR_Y0, AR_Y1 = BAR_Y1 + GAP, 105.0
-CX = C / 2
-AIM = (CX, (BAR_Y0 + BAR_Y1) / 2)   # the outer edges of both legs aim at the centre of the datum
-
-def solve_leg_width():
-    """Top width of the arrow. The outer edge of a leg runs from a lower corner of the
-    mark to AIM, so the approach corridor converges on the centre of the docking plane."""
-    x_top = M + (CX - M) * (AR_Y1 - AR_Y0) / (AR_Y1 - AIM[1])
-    return 2 * (CX - x_top)
-
-W = solve_leg_width()
-t_notch = (T / 2 + W / 2) / ((C / 2 - M) - W / 2)
-NOTCH_Y = AR_Y0 + (AR_Y1 - AR_Y0) * t_notch
-LEG_THICKNESS = W * (AR_Y1 - AR_Y0) / math.hypot((C / 2 - M) - W / 2, AR_Y1 - AR_Y0)
-
-BAR = [(M, BAR_Y0), (C - M, BAR_Y0), (C - M, BAR_Y1), (M, BAR_Y1)]
-ARROW = [
-    (CX - W / 2, AR_Y0), (CX + W / 2, AR_Y0),
-    (C - M, AR_Y1), (C - M - W, AR_Y1),
-    (CX + T / 2, NOTCH_Y), (CX + T / 2, AR_Y1), (CX - T / 2, AR_Y1), (CX - T / 2, NOTCH_Y),
-    (M + W, AR_Y1), (M, AR_Y1),
-]
+# ---------------------------------------------------------------- mark geometry: the cut disc
+# A survey disc. One disc; the level line and the broad arrow are both cut into it.
+C = 120.0                      # canvas
+CX = CY = 60.0
+R = 53.0                       # the disc. 7 units of clearance are built into the canvas
+M = C / 2 - R
+SLOT_Y0, SLOT_Y1 = 25.0, 33.5  # the level line, cut right across
+APEX = (CX, SLOT_Y1)           # the three cuts of the broad arrow start on the line
+BASE_Y = 100.0
+CUT_X = (36.0, 60.0, 84.0)     # where each cut ends
+CUT_HALF = 5.0                 # half width of a cut at its end
 ROT = {"parent": 0, "dock": 90, "landing": 180}
 
-def rot(p, deg):
-    a = math.radians(deg)
-    x, y = p[0] - CX, p[1] - CX
-    return (CX + x * math.cos(a) - y * math.sin(a), CX + x * math.sin(a) + y * math.cos(a))
+def chord(y):
+    return math.sqrt(R * R - (y - CY) ** 2)
+
+RIM = R - math.hypot(CUT_X[0] - CUT_HALF - CX, BASE_Y - CY)   # metal left between an outer cut and the edge
 
 def n(v):
     s = f"{v:.2f}".rstrip("0").rstrip(".")
     return "0" if s in ("-0", "") else s
 
-def poly(points, deg=0, sx=1.0, ox=0.0, oy=0.0):
-    pts = [rot(p, deg) for p in points]
-    return "M" + "L".join(f"{n(ox + x * sx)} {n(oy + y * sx)}" for x, y in pts) + "Z"
-
 def mark_d(sim="parent", s=1.0, ox=0.0, oy=0.0):
-    return poly(BAR, ROT[sim], s, ox, oy) + poly(ARROW, ROT[sim], s, ox, oy)
+    a = math.radians(ROT[sim])
+    def P(x, y):
+        dx, dy = x - CX, y - CY
+        return f"{n(ox + (CX + dx * math.cos(a) - dy * math.sin(a)) * s)} {n(oy + (CY + dx * math.sin(a) + dy * math.cos(a)) * s)}"
+    r = n(R * s)
+    h0, h1 = chord(SLOT_Y0), chord(SLOT_Y1)
+    d = f"M{P(CX - h0, SLOT_Y0)}A{r} {r} 0 0 1 {P(CX + h0, SLOT_Y0)}Z"            # the cap above the line
+    d += f"M{P(CX + h1, SLOT_Y1)}A{r} {r} 0 1 1 {P(CX - h1, SLOT_Y1)}Z"           # the body below it
+    for cx in CUT_X:                                                              # wound the other way: holes
+        d += f"M{P(*APEX)}L{P(cx - CUT_HALF, BASE_Y)}L{P(cx + CUT_HALF, BASE_Y)}Z"
+    return d
 
 # ---------------------------------------------------------------- wordmark outlines
-def load(path, wght):
-    f = TTFont(path)
+def load(wght):
+    f = TTFont(os.path.join(BRAND, "fonts", "Geist-Variable.woff2"))
     f = instantiateVariableFont(f, {"wght": wght})
     f.flavor = None
     buf = io.BytesIO(); f.save(buf)
-    return f, buf.getvalue()
+    return {"font": f, "data": buf.getvalue(), "gs": f.getGlyphSet(), "order": f.getGlyphOrder()}
 
-FONT, FONT_DATA = load(os.path.join(BRAND, "fonts", "Geist-Variable.woff2"), 600)
-UPM = FONT["head"].unitsPerEm
-CAP = FONT["OS/2"].sCapHeight
-TRACK = -0.045 * UPM
-GS = FONT.getGlyphSet()
-ORDER = FONT.getGlyphOrder()
+FONTS = {700: load(700), 800: load(800)}
+UPM = FONTS[700]["font"]["head"].unitsPerEm
+CAP = FONTS[700]["font"]["OS/2"].sCapHeight
+TRACK = -0.04 * UPM
+# The display wordmark, weight 800 only, takes the hand-placed cuts of cuts.py.
 
-def shape(text):
-    face = hb.Face(FONT_DATA); hf = hb.Font(face)
+def shape(text, F):
+    hf = hb.Font(hb.Face(F["data"]))
     buf = hb.Buffer(); buf.add_str(text); buf.guess_segment_properties()
     hb.shape(hf, buf, {"kern": True, "liga": False})
     x, out = 0.0, []
     for info, pos in zip(buf.glyph_infos, buf.glyph_positions):
-        out.append((ORDER[info.codepoint], x + pos.x_offset, info.cluster))
+        out.append((F["order"][info.codepoint], x + pos.x_offset, info.cluster, text[info.cluster]))
         x += pos.x_advance + TRACK
     return out
 
-def wordmark(text, cap_px, groups):
+def glyph_path(F, name, ch, cut_it):
+    p = pathops.Path()
+    F["gs"][name].draw(p.getPen(glyphSet=F["gs"]))
+    return cut(p, CUTS[ch]) if cut_it and ch in CUTS else p
+
+def wordmark(text, cap_px, groups, weight=700, cut=False):
     """groups: list of (start, end) char ranges. Returns (list of path d, width).
     Local coords: x=0 at ink left, y=0 at baseline, y grows down."""
-    glyphs = shape(text)
+    F = FONTS[weight]
+    glyphs = shape(text, F)
     s = cap_px / CAP
-    bp = BoundsPen(GS)
-    for name, x, _ in glyphs:
-        GS[name].draw(TransformPen(bp, (1, 0, 0, 1, x, 0)))
+    bp = BoundsPen(F["gs"])
+    for name, x, _, _ in glyphs:
+        F["gs"][name].draw(TransformPen(bp, (1, 0, 0, 1, x, 0)))
     xmin, _, xmax, _ = bp.bounds
     ds = []
     for a, b in groups:
-        pen = SVGPathPen(GS, ntos=n)
-        for name, x, cl in glyphs:
+        pen = SVGPathPen(None, ntos=n)
+        for name, x, cl, ch in glyphs:
             if a <= cl < b:
-                GS[name].draw(TransformPen(pen, (s, 0, 0, -s, (x - xmin) * s, 0)))
+                glyph_path(F, name, ch, cut).draw(TransformPen(pen, (s, 0, 0, -s, (x - xmin) * s, 0)))
         ds.append(pen.getCommands())
     return ds, (xmax - xmin) * s
 
 # ---------------------------------------------------------------- lockups
-CAP_H = 72.0                      # cap height in a horizontal lockup; the mark is 1.25 x cap
-MARK_GAP = 30.0                   # two modules between mark and wordmark
-BASELINE = CX + CAP_H / 2
+CAP_H = 78.0                      # cap height beside the 120 canvas: the disc is 1.36 x the cap height
+MARK_GAP = 43.0                   # disc edge to wordmark: 0.55 x cap height
+BASELINE = CY + CAP_H / 2
 NAMES = {"parent": None, "dock": "Dock", "landing": "Landing"}
 
 def text_groups(sim):
@@ -139,16 +137,17 @@ def lockup_v(sim):
     ds, w = wordmark(text, cap, groups)
     width = max(w + 2 * M, C)
     mx = (width - C) / 2
-    by = C + 4 + cap
-    return {"viewBox": [0, 0, round(width, 2), round(by + M + 6, 2)], "mark": mark_d(sim, 1, mx, 0),
+    by = C + 10 + cap
+    return {"viewBox": [0, 0, round(width, 2), round(by + M + 12, 2)], "mark": mark_d(sim, 1, mx, 0),
             "a": ds[0], "b": ds[1], "tx": round((width - w) / 2, 2), "ty": by}
 
 def wordmark_only(sim):
+    """The display wordmark: weight 800 with the hand cuts. For 48 px cap height and up."""
     text, groups = text_groups(sim)
-    cap = 72.0
-    ds, w = wordmark(text, cap, groups)
-    return {"viewBox": [0, 0, round(w + 2 * M, 2), cap + 20 + 2 * M], "mark": "",
-            "a": ds[0], "b": ds[1], "tx": M, "ty": M + cap + 2}
+    cap, pad = 72.0, 15.0
+    ds, w = wordmark(text, cap, groups, 800, True)
+    return {"viewBox": [0, 0, round(w + 2 * pad, 2), cap + 22 + 2 * pad], "mark": "",
+            "a": ds[0], "b": ds[1], "tx": pad, "ty": pad + cap + 2}
 
 def svg(lk, c_mark, c_a, c_b, title):
     vb = " ".join(n(v) for v in lk["viewBox"])
@@ -192,7 +191,7 @@ for sim in ROT:
 # ---------------------------------------------------------------- app icons and favicon
 def app_icon(sim, bg, fg, rounded=True):
     S = 1024.0
-    scale = 0.70 * S / C
+    scale = 0.74 * S / C
     off = (S - C * scale) / 2
     r = 230 if rounded else 0
     return (f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024" role="img" aria-label="{TITLES[sim]} app icon">\n'
@@ -209,19 +208,19 @@ for name, (sim, bg, fg) in ICONS.items():
     write(f"{name}.svg", app_icon(sim, bg, fg, True)); written.append(f"{name}.svg")
     write(f"{name}-square.svg", app_icon(sim, bg, fg, False)); written.append(f"{name}-square.svg")
 
-# The favicon crops the built-in clearance so the mark fills a 16 px tab icon.
-favicon = (f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="9 9 102 102">\n'
+# The favicon crops the built-in clearance so the disc fills a 16 px tab icon.
+favicon = (f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="{n(M)} {n(M)} {n(2 * R)} {n(2 * R)}">\n'
            f'<style>path{{fill:{INK}}}@media (prefers-color-scheme:dark){{path{{fill:{PAPER}}}}}</style>\n'
            f'<path d="{mark_d("parent")}"/>\n</svg>\n')
 write("favicon.svg", favicon); written.append("favicon.svg")
 
 # ---------------------------------------------------------------- data for the web
 geom = {
-    "canvas": C, "stroke": T, "margin": M, "gap": GAP, "legWidth": round(W, 4), "legThickness": round(LEG_THICKNESS, 4),
-    "notchY": round(NOTCH_Y, 4), "aim": list(AIM),
-    "bar": BAR, "arrow": [[round(x, 4), round(y, 4)] for x, y in ARROW],
-    "rotation": ROT, "capHeight": CAP_H, "markGap": MARK_GAP, "baseline": BASELINE,
-    "font": {"family": "Geist", "weight": 600, "tracking": -0.045, "unitsPerEm": UPM, "capHeightUnits": CAP},
+    "canvas": C, "centre": [CX, CY], "radius": R, "clearance": M,
+    "slot": [SLOT_Y0, SLOT_Y1], "apex": list(APEX), "baseY": BASE_Y, "cutX": list(CUT_X), "cutHalf": CUT_HALF,
+    "rim": round(RIM, 3), "rotation": ROT, "capHeight": CAP_H, "markGap": MARK_GAP, "baseline": BASELINE,
+    "font": {"family": "Geist", "weight": 700, "displayWeight": 800, "tracking": -0.04, "unitsPerEm": UPM, "capHeightUnits": CAP,
+             "cuts": {k: [list(c) for c in v] for k, v in CUTS.items()}},
 }
 with open(os.path.join(BRAND, "logo", "geometry.json"), "w", encoding="utf-8", newline="\n") as f:
     json.dump(geom, f, indent=2); f.write("\n")
@@ -245,6 +244,7 @@ var api = {
   mark: function (sim, opts) { return svg(sim, 'mark', opts); },
   lockup: function (sim, opts) { return svg(sim, 'horizontal', opts); },
   stacked: function (sim, opts) { return svg(sim, 'stacked', opts); },
+  /* The display wordmark, with the hand cuts. Use it at 48 px cap height and up; below that use the lockup. */
   wordmark: function (sim, opts) { return svg(sim, 'wordmark', opts); },
   /* Replace every <span data-sb-logo="lockup" data-sim="dock" data-height="32"> placeholder. */
   mount: function (scope) {
@@ -266,7 +266,7 @@ os.makedirs(os.path.join(BRAND, "js"), exist_ok=True)
 with open(os.path.join(BRAND, "js", "sb-logo.js"), "w", encoding="utf-8", newline="\n") as f:
     f.write(js)
 
-print("leg top width", round(W, 3), "leg thickness", round(LEG_THICKNESS, 3), "notch y", round(NOTCH_Y, 3))
+print("disc radius", R, "rim left beside an outer cut", round(RIM, 3), "cap height units", CAP)
 print("svg files", len(written))
 for sim in LOCKUPS:
-    print(sim, "horizontal", LOCKUPS[sim]["horizontal"]["viewBox"], "stacked", LOCKUPS[sim]["stacked"]["viewBox"])
+    print(sim, "horizontal", LOCKUPS[sim]["horizontal"]["viewBox"], "stacked", LOCKUPS[sim]["stacked"]["viewBox"], "wordmark", LOCKUPS[sim]["wordmark"]["viewBox"])

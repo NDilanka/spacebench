@@ -2,22 +2,23 @@
 @font-face{font-family:"Geist";src:url("../fonts/Geist-Variable.woff2") format("woff2");font-weight:100 900;font-style:normal;font-display:swap}
 @font-face{font-family:"Geist Mono";src:url("../fonts/GeistMono-Variable.woff2") format("woff2");font-weight:100 900;font-style:normal;font-display:swap}
 @font-face{font-family:"SB Matrix";src:url("../fonts/SBMatrix.woff2") format("woff2");font-weight:400;font-style:normal;font-display:swap}
+@font-face{font-family:"SB Display";src:url("../fonts/SBDisplay.woff2") format("woff2");font-weight:800;font-style:normal;font-display:swap}
 
 :root{
   --sb-n-0:#FFFFFF;
-  --sb-n-50:#FAFAF8;
-  --sb-n-100:#F3F3F1;
-  --sb-n-200:#E9E9E6;
-  --sb-n-300:#DCDCD8;
-  --sb-n-400:#C2C2BD;
-  --sb-n-500:#8A8A84;
-  --sb-n-600:#7A7A74;
-  --sb-n-700:#5C5C57;
-  --sb-n-800:#3A3A37;
-  --sb-n-850:#2A2A28;
-  --sb-n-900:#1B1B1A;
-  --sb-n-950:#121211;
-  --sb-n-1000:#0A0A09;
+  --sb-n-50:#F6F7F9;
+  --sb-n-100:#ECEEF1;
+  --sb-n-200:#E1E4E9;
+  --sb-n-300:#C6CBD4;
+  --sb-n-400:#A9B0BC;
+  --sb-n-500:#7C8493;
+  --sb-n-600:#6B7387;
+  --sb-n-700:#454C5B;
+  --sb-n-800:#3A435A;
+  --sb-n-850:#1F2638;
+  --sb-n-900:#111622;
+  --sb-n-950:#090C13;
+  --sb-n-1000:#05070C;
   --sb-violet-50:#F1EDFF;
   --sb-violet-100:#E4DCFF;
   --sb-violet-200:#CBBDFF;
@@ -43,13 +44,14 @@
   --sb-font-sans:"Geist", "Helvetica Neue", Helvetica, Arial, sans-serif;
   --sb-font-mono:"Geist Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
   --sb-font-matrix:"SB Matrix", "Geist Mono", ui-monospace, monospace;
-  --sb-type-display-xl:600 120px/0.9 var(--sb-font-sans);
+  --sb-font-display:"SB Display", "Geist", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  --sb-type-display-xl:700 120px/0.9 var(--sb-font-sans);
   --sb-track-display-xl:-0.055em;
-  --sb-type-display:600 72px/0.95 var(--sb-font-sans);
+  --sb-type-display:700 72px/0.95 var(--sb-font-sans);
   --sb-track-display:-0.05em;
-  --sb-type-h1:600 44px/1.02 var(--sb-font-sans);
+  --sb-type-h1:700 44px/1.02 var(--sb-font-sans);
   --sb-track-h1:-0.04em;
-  --sb-type-h2:600 30px/1.1 var(--sb-font-sans);
+  --sb-type-h2:700 30px/1.1 var(--sb-font-sans);
   --sb-track-h2:-0.03em;
   --sb-type-h3:600 20px/1.2 var(--sb-font-sans);
   --sb-track-h3:-0.02em;
@@ -59,18 +61,18 @@
   --sb-track-body:-0.005em;
   --sb-type-small:400 13px/1.45 var(--sb-font-sans);
   --sb-track-small:0em;
-  --sb-type-label:500 11px/1.2 var(--sb-font-mono);
+  --sb-type-label:500 11px/1.35 var(--sb-font-mono);
   --sb-track-label:0.07em;
-  --sb-type-micro:500 9.5px/1.2 var(--sb-font-mono);
-  --sb-track-micro:0.08em;
+  --sb-type-micro:500 11px/1.2 var(--sb-font-mono);
+  --sb-track-micro:0.05em;
   --sb-type-code:400 13px/1.5 var(--sb-font-mono);
   --sb-track-code:0em;
-  --sb-type-readout-xl:400 112px/1 var(--sb-font-matrix);
+  --sb-type-figure:500 20px/1 var(--sb-font-mono);
+  --sb-track-figure:0em;
+  --sb-type-readout-xl:400 144px/1 var(--sb-font-matrix);
   --sb-track-readout-xl:0em;
-  --sb-type-readout:400 44px/1 var(--sb-font-matrix);
+  --sb-type-readout:400 72px/1 var(--sb-font-matrix);
   --sb-track-readout:0em;
-  --sb-type-readout-sm:400 20px/1 var(--sb-font-matrix);
-  --sb-track-readout-sm:0em;
   --sb-space-0:0px;
   --sb-space-1:2px;
   --sb-space-2:4px;
@@ -96,6 +98,9 @@
   --sb-ease-brake:cubic-bezier(0.3, 0, 0.1, 1);
   --sb-hairline:1px;
   --sb-stroke:1.5px;
+  --sb-line-cut:1.25px;
+  --sb-line-axis:0.45px;
+  --sb-line-dim:0.35px;
 }
 
 /* Ground. Colours use light-dark(), so they resolve where they are used. A dark panel
@@ -104,42 +109,38 @@
 [data-theme="light"]{color-scheme:light}
 [data-theme="dark"]{color-scheme:dark}
 :root{
-  --sb-bg:light-dark(#F3F3F1,#121211);
-  --sb-bg-sunken:light-dark(#E9E9E6,#0A0A09);
-  --sb-surface:light-dark(#FAFAF8,#1B1B1A);
-  --sb-surface-raised:light-dark(#FFFFFF,#2A2A28);
-  --sb-line:light-dark(#DCDCD8,#2A2A28);
-  --sb-line-strong:light-dark(#C2C2BD,#3A3A37);
-  --sb-fg:light-dark(#121211,#F3F3F1);
-  --sb-fg-2:light-dark(#5C5C57,#8A8A84);
-  --sb-fg-3:light-dark(#8A8A84,#7A7A74);
-  --sb-fg-inverse:light-dark(#F3F3F1,#121211);
+  --sb-bg:light-dark(#ECEEF1,#090C13);
+  --sb-bg-sunken:light-dark(#E1E4E9,#05070C);
+  --sb-surface:light-dark(#F6F7F9,#111622);
+  --sb-surface-raised:light-dark(#FFFFFF,#1F2638);
+  --sb-line:light-dark(#C6CBD4,#1F2638);
+  --sb-line-strong:light-dark(#A9B0BC,#3A435A);
+  --sb-fg:light-dark(#090C13,#ECEEF1);
+  --sb-fg-2:light-dark(#454C5B,#A9B0BC);
+  --sb-fg-3:light-dark(#7C8493,#6B7387);
+  --sb-fg-inverse:light-dark(#ECEEF1,#090C13);
   --sb-alert:light-dark(#D92D12,#FF5A45);
-  --sb-shadow-card:0 1px 0 rgba(18,18,17,.04), 0 12px 32px -16px rgba(18,18,17,.16);
 }
-[data-theme="light"]{--sb-shadow-card:0 1px 0 rgba(18,18,17,.04), 0 12px 32px -16px rgba(18,18,17,.16)}
-[data-theme="dark"]{--sb-shadow-card:0 0 0 1px rgba(243,243,241,.04)}
-@media (prefers-color-scheme:dark){:root:not([data-theme]){--sb-shadow-card:0 0 0 1px rgba(243,243,241,.04)}}
 
 /* Accent. The parent brand has none: its accent is the foreground. */
 :root,[data-sim="parent"]{
-  --sb-accent:light-dark(#121211,#F3F3F1);
-  --sb-accent-text:light-dark(#121211,#F3F3F1);
-  --sb-accent-contrast:light-dark(#F3F3F1,#121211);
-  --sb-accent-soft:light-dark(#E9E9E6,#1B1B1A);
-  --sb-accent-line:light-dark(#C2C2BD,#3A3A37);
+  --sb-accent:light-dark(#090C13,#ECEEF1);
+  --sb-accent-text:light-dark(#090C13,#ECEEF1);
+  --sb-accent-contrast:light-dark(#ECEEF1,#090C13);
+  --sb-accent-soft:light-dark(#E1E4E9,#111622);
+  --sb-accent-line:light-dark(#A9B0BC,#3A435A);
 }
 [data-sim="dock"]{
   --sb-accent:light-dark(#6B3BFF,#8E6BFF);
   --sb-accent-text:light-dark(#6B3BFF,#AC95FF);
-  --sb-accent-contrast:light-dark(#FFFFFF,#0A0A09);
+  --sb-accent-contrast:light-dark(#FFFFFF,#05070C);
   --sb-accent-soft:light-dark(#F1EDFF,#150B33);
   --sb-accent-line:light-dark(#CBBDFF,#2D137A);
 }
 [data-sim="landing"]{
   --sb-accent:light-dark(#FF5A0A,#FF7A33);
   --sb-accent-text:light-dark(#A83600,#FF7A33);
-  --sb-accent-contrast:light-dark(#121211,#0A0A09);
+  --sb-accent-contrast:light-dark(#090C13,#05070C);
   --sb-accent-soft:light-dark(#FFF1E8,#2B0E00);
   --sb-accent-line:light-dark(#FFC29E,#752600);
 }

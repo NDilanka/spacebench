@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><title>SB-F-000. Gate run, seed 1</title>
+<link rel="stylesheet" href="r2.css">
+<style>
+#sheet { width: 1600px; height: 1316px; }
+.hdr { position: absolute; left: 48px; right: 48px; top: 40px; display: flex; justify-content: space-between; }
+h1 { position: absolute; left: 44px; top: 84px; font: 700 96px/.98 var(--sans); letter-spacing: -.05em; }
+#copy { position: absolute; left: 1050px; top: 100px; width: 502px; font: 400 16.5px/1.46 var(--sans); }
+#draw { position: absolute; left: 0; top: 0; }
+#read { position: absolute; left: 1100px; right: 48px; top: 496px; }
+#read .r { display: grid; grid-template-columns: 1fr auto; padding: 8px 0 7px; border-top: .5px solid var(--on-ink-3); font: 400 15.5px/1.3 var(--sans); }
+#read .r:last-child { border-bottom: .5px solid var(--on-ink-3); }
+#read .r b { font: 600 15px/1.3 var(--mono); }
+.pl { position: absolute; }
+</style></head>
+<body><div class="sheet ink" id="sheet">
+  <svg id="draw" width="1600" height="1316"></svg>
+  <div class="hdr cap"><div><b style="color:var(--on-ink)">SpaceBench</b></div><div>Gate run · seed 1</div><div>Simulator output. Not a docking, not a model</div></div>
+  <h1>Nobody flew this.</h1>
+  <div id="copy">No pilot and no target. The gate fires sixteen thrusters at random, redrawn every 0.035 s, to check that two builds of the simulator agree. This is what that does to a 12-tonne capsule in 1,000 seconds.</div>
+  <div id="read"></div>
+  <div class="pl cap" style="left:48px;top:236px"><b style="color:var(--on-ink)">Long exposure</b> · centre of mass and long axis, every 0.2 s</div>
+  <div class="pl cap" style="left:48px;top:470px"><b style="color:var(--on-ink)">Nose trace</b> · where the long axis pointed</div>
+  <div class="pl cap" style="left:580px;top:470px"><b style="color:var(--on-ink)">Turning rate</b> · deg/s, about each body axis</div>
+  <div class="pl cap" style="left:1100px;top:470px"><b style="color:var(--on-ink)">At the end</b></div>
+  <div class="pl cap" id="sclab" style="left:48px;top:968px"></div>
+  <div id="tb"></div>
+</div>
+<script src="data/flight1.js"></script><script src="data/hershey.js"></script><script src="r2.js"></script>
+<script>
+(function () {
+  var f = SB2.f, F = window.SB_FLIGHT, FG = '#EEF0F4', G2 = '#A9B0C0', G3 = '#6B7387', DEG = 180 / Math.PI, s = '';
+  function dot(a, b) { return a[0] * b[0] + a[1] * b[1] + a[2] * b[2]; }
+  function norm(a) { var n = Math.sqrt(dot(a, a)); return [a[0] / n, a[1] / n, a[2] / n]; }
+  /* ---- long exposure. View: square-on to the plane the path lies closest to. ---- */
+  var P = F.long.p, Q = F.long.q, n = P.length, u = norm(P[n - 1]);
+  var res = P.map(function (p) { var k = dot(p, u); return [p[0] - k * u[0], p[1] - k * u[1], p[2] - k * u[2]]; });
+  var v = [0.3, 0.5, 0.8];
+  for (var it = 0; it < 60; it++) { var acc = [0, 0, 0]; res.forEach(function (r) { var k = dot(r, v); acc[0] += k * r[0]; acc[1] += k * r[1]; acc[2] += k * r[2]; }); v = norm(acc); }
+  var pts = P.map(function (p) { return [dot(p, u), dot(p, v)]; });
+  var LEN = 8.1, half = LEN / 2;
+  var ax = Q.map(function (q) { var w = q[0], x = q[1], y = q[2], z = q[3], b = [1 - 2 * (y * y + z * z), 2 * (x * y + w * z), 2 * (x * z - w * y)]; return [dot(b, u), dot(b, v)]; });
+  var x0 = 1e9, x1 = -1e9, y0 = 1e9, y1 = -1e9;
+  pts.forEach(function (p) { x0 = Math.min(x0, p[0]); x1 = Math.max(x1, p[0]); y0 = Math.min(y0, p[1]); y1 = Math.max(y1, p[1]); });
+  var BX = 48, BY = 262, BW = 1504, BH = 150, k = Math.min((BW - 40) / (x1 - x0 + LEN), (BH - 40) / (y1 - y0 + LEN));
+  var ox = BX + (BW - (x1 - x0) * k) / 2 - x0 * k, oy = BY + BH / 2 + (y0 + y1) / 2 * k;
+  function sx(p) { return ox + p[0] * k; } function sy(p) { return oy - p[1] * k; }
+  var comb = '', path = '';
+  pts.forEach(function (p, i) {
+    var a = ax[i];
+    comb += 'M' + f(sx(p) - a[0] * half * k) + ' ' + f(sy(p) + a[1] * half * k) + 'L' + f(sx(p) + a[0] * half * k) + ' ' + f(sy(p) - a[1] * half * k);
+    path += (i ? 'L' : 'M') + f(sx(p)) + ' ' + f(sy(p));
+  });
+  s += '<path d="' + comb + '" stroke="' + FG + '" stroke-width=".8" stroke-opacity=".16" fill="none"/>';
+  s += '<path d="' + path + '" stroke="#090C13" stroke-width="1.1" fill="none"/>';
+  /* time marks every 100 s */
+  for (var t = 0; t <= 1000; t += 100) {
+    var i = Math.round(t / 0.2), p = pts[i], below = sy(p) + 26;
+    s += '<circle cx="' + f(sx(p)) + '" cy="' + f(sy(p)) + '" r="2.6" fill="' + FG + '" stroke="#090C13" stroke-width="1"/>';
+  }
+  var pe = pts[n - 1], ps = pts[0];
+  s += SB2.plot('starts here, at rest', { x: sx(ps) + 22, y: sy(ps) + 48, size: 13, color: FG });
+  s += '<path d="M' + f(sx(ps) + 18) + ' ' + f(sy(ps) + 40) + 'L' + f(sx(ps) + 3) + ' ' + f(sy(ps) + 22) + '" stroke="' + FG + '" stroke-width="1" fill="none"/>';
+  var dist = Math.sqrt(dot(F.end.p, F.end.p));
+  s += SB2.plot('1000 seconds later', { x: sx(pe) - 46, y: sy(pe) - 30, size: 13, color: FG, anchor: 'end' });
+  s += '<path d="M' + f(sx(pe) - 40) + ' ' + f(sy(pe) - 30) + 'L' + f(sx(pe) - 8) + ' ' + f(sy(pe) - 5) + '" stroke="' + FG + '" stroke-width="1" fill="none"/>';
+  /* scale bar, 50 m, and the capsule length at the same scale */
+  var by = BY + BH + 8, BXs = 520;
+  s += '<path d="M' + BXs + ' ' + by + 'h' + f(50 * k) + 'M' + BXs + ' ' + (by - 5) + 'v10M' + f(BXs + 50 * k) + ' ' + (by - 5) + 'v10" stroke="' + FG + '" stroke-width="1.25" fill="none"/>';
+  s += '<text x="' + f(BXs + 50 * k + 12) + '" y="' + (by + 4) + '" font-family="Geist Mono" font-size="11" font-weight="500" letter-spacing=".8" fill="' + G2 + '">50 M</text>';
+  s += '<path d="M' + f(BXs + 50 * k + 90) + ' ' + by + 'h' + f(LEN * k) + '" stroke="' + FG + '" stroke-width="2.5"/>';
+  s += '<text x="' + f(BXs + 50 * k + 90 + LEN * k + 12) + '" y="' + (by + 4) + '" font-family="Geist Mono" font-size="11" font-weight="500" letter-spacing=".8" fill="' + G2 + '">LONG AXIS DRAWN 8.1 M, TO SCALE · DOT EVERY 100 S</text>';
+
+  /* ---- nose trace: the long axis as a point on a sphere. Pole = where it pointed at the start. ---- */
+  var GX = 258, GY = 716, GR = 196, cam = norm([0.62, -0.42, 0.66]), e1 = norm([cam[1], -cam[0], 0]), e2 = [cam[1] * e1[2] - cam[2] * e1[1], cam[2] * e1[0] - cam[0] * e1[2], cam[0] * e1[1] - cam[1] * e1[0]];
+  function gp(b) { return [GX + dot(b, e1) * GR, GY - dot(b, e2) * GR, dot(b, cam)]; }
+  s += '<circle cx="' + GX + '" cy="' + GY + '" r="' + GR + '" fill="none" stroke="' + FG + '" stroke-width="1.25"/>';
+  var grat = '';
+  function arc(fn) { var pen = false; for (var a = 0; a <= 360; a += 3) { var q = gp(fn(a * Math.PI / 180)); if (q[2] >= 0) { grat += (pen ? 'L' : 'M') + f(q[0]) + ' ' + f(q[1]); pen = true; } else pen = false; } }
+  [-60, -30, 0, 30, 60].forEach(function (lat) { var cl = Math.cos(lat * Math.PI / 180), sl = Math.sin(lat * Math.PI / 180); arc(function (a) { return [sl, cl * Math.cos(a), cl * Math.sin(a)]; }); });
+  for (var lon = 0; lon < 180; lon += 30) (function (lo) { var cl = Math.cos(lo * Math.PI / 180), sl = Math.sin(lo * Math.PI / 180); arc(function (a) { return [Math.cos(a), Math.sin(a) * cl, Math.sin(a) * sl]; }); })(lon);
+  s += '<path d="' + grat + '" fill="none" stroke="' + G3 + '" stroke-width=".45"/>';
+  var front = '', back = '', last = 0;
+  Q.forEach(function (q, i) {
+    var w = q[0], x = q[1], y = q[2], z = q[3], q2 = gp([1 - 2 * (y * y + z * z), 2 * (x * y + w * z), 2 * (x * z - w * y)]), side = q2[2] >= 0 ? 1 : -1, seg = (side === last ? 'L' : 'M') + f(q2[0]) + ' ' + f(q2[1]);
+    if (side > 0) front += seg; else back += seg;
+    last = side;
+  });
+  s += '<path d="' + back + '" fill="none" stroke="' + G3 + '" stroke-width=".7"/><path d="' + front + '" fill="none" stroke="' + FG + '" stroke-width="1.1" stroke-linejoin="round"/>';
+  var pole = gp([1, 0, 0]), qe = Q[n - 1], endp = gp([1 - 2 * (qe[2] * qe[2] + qe[3] * qe[3]), 2 * (qe[1] * qe[2] + qe[0] * qe[3]), 2 * (qe[1] * qe[3] - qe[0] * qe[2])]);
+  s += '<circle cx="' + f(pole[0]) + '" cy="' + f(pole[1]) + '" r="4.5" fill="' + FG + '" stroke="#090C13" stroke-width="1.5"/>';
+  s += '<circle cx="' + f(endp[0]) + '" cy="' + f(endp[1]) + '" r="4.5" fill="#090C13" stroke="' + FG + '" stroke-width="1.5"/>';
+  s += '<circle cx="54" cy="' + (GY + GR + 26) + '" r="4.5" fill="' + FG + '"/><text x="68" y="' + (GY + GR + 30) + '" font-family="Geist Mono" font-size="11" font-weight="500" letter-spacing=".8" fill="' + G2 + '">START</text>';
+  s += '<circle cx="134" cy="' + (GY + GR + 26) + '" r="4" fill="none" stroke="' + FG + '" stroke-width="1.5"/><text x="148" y="' + (GY + GR + 30) + '" font-family="Geist Mono" font-size="11" font-weight="500" letter-spacing=".8" fill="' + G2 + '">END' + (endp[2] < 0 ? ', ON THE FAR SIDE' : '') + ' · GREY IS THE FAR SIDE</text>';
+
+  /* ---- turning rate, whole run ---- */
+  var RX = 600, RY = 500, RW = 440, RH = 400, W3 = F.long.w, mx = 10, mid = RY + RH / 2, ky = RH / 2 / mx;
+  s += '<rect x="' + RX + '" y="' + f(mid - .2 * ky) + '" width="' + RW + '" height="' + f(.4 * ky) + '" fill="' + FG + '"/>';
+  [-10, -5, 5, 10].forEach(function (g) { s += '<path d="M' + RX + ' ' + f(mid - g * ky) + 'h' + RW + '" stroke="' + G3 + '" stroke-width=".5"/><text x="' + (RX - 8) + '" y="' + f(mid - g * ky + 4) + '" text-anchor="end" font-family="Geist Mono" font-size="11" font-weight="500" fill="' + G2 + '">' + (g > 0 ? '+' : '−') + Math.abs(g) + '</text>'; });
+  [[0, FG, 1.5, ''], [1, G2, 1.1, ''], [2, FG, 1, '1 3']].forEach(function (c) {
+    var d = '';
+    for (var i = 0; i < n; i += 5) d += (i ? 'L' : 'M') + f(RX + i / (n - 1) * RW) + ' ' + f(mid - W3[i][c[0]] * DEG * ky);
+    s += '<path d="' + d + '" fill="none" stroke="' + c[1] + '" stroke-width="' + c[2] + '"' + (c[3] ? ' stroke-dasharray="' + c[3] + '"' : '') + '/>';
+  });
+  s += '<text x="' + RX + '" y="' + (RY + RH + 22) + '" font-family="Geist Mono" font-size="11" font-weight="500" letter-spacing=".8" fill="' + G2 + '">0 S</text><text x="' + (RX + RW) + '" y="' + (RY + RH + 22) + '" text-anchor="end" font-family="Geist Mono" font-size="11" font-weight="500" letter-spacing=".8" fill="' + G2 + '">1,000 S</text>';
+  s += '<text x="' + (RX + RW / 2) + '" y="' + (RY + RH + 22) + '" text-anchor="middle" font-family="Geist Mono" font-size="11" font-weight="500" letter-spacing=".8" fill="' + G2 + '">X SOLID · Y GREY · Z DOTTED</text>';
+  s += '<text x="' + RX + '" y="' + (RY + RH + 44) + '" font-family="Geist Mono" font-size="11" font-weight="600" letter-spacing=".8" fill="' + FG + '">WHITE BAND AT ZERO: THE CONTACT LIMIT, ±0.20 DEG/S</text>';
+
+  /* ---- thruster score, first 5 s ---- */
+  var SL = F.first.slots, SX = 190, SY = 1000, SW = (1552 - SX) / SL.length, RP = 9, GAP = 9, pods = ['POD +Y · 0 TO 3', 'POD −Y · 4 TO 7', 'POD +Z · 8 TO 11', 'POD −Z · 12 TO 15'], pulses = 0, d2 = '';
+  for (var th = 0; th < 16; th++) {
+    var y = SY + th * RP + Math.floor(th / 4) * GAP;
+    s += '<path d="M' + SX + ' ' + (y + 3.5) + 'H1552" stroke="' + G3 + '" stroke-width=".35"/>';
+    SL.forEach(function (m, j) { if (m >> th & 1) { d2 += 'M' + f(SX + j * SW) + ' ' + y + 'h' + f(SW - 1.6) + 'v7h' + f(-(SW - 1.6)) + 'z'; pulses++; } });
+  }
+  s += '<path d="' + d2 + '" fill="' + FG + '"/>';
+  pods.forEach(function (p, g) { s += '<text x="48" y="' + (SY + g * (4 * RP + GAP) + 22) + '" font-family="Geist Mono" font-size="11" font-weight="500" letter-spacing=".8" fill="' + G2 + '">' + p + '</text>'; });
+  var ay = SY + 16 * RP + 3 * GAP + 8;
+  for (var sec = 0; sec <= 5; sec++) { var x = SX + sec / 0.035 * SW; s += '<path d="M' + f(x) + ' ' + ay + 'v7" stroke="' + FG + '" stroke-width="1.1"/><text x="' + f(x + (sec === 5 ? -6 : 6)) + '" y="' + (ay + 11) + '" text-anchor="' + (sec === 5 ? 'end' : 'start') + '" font-family="Geist Mono" font-size="11" font-weight="500" fill="' + G2 + '">' + sec + ' S</text>'; }
+  document.getElementById('draw').innerHTML = s;
+  document.getElementById('sclab').innerHTML = '<b style="color:var(--on-ink)">Thruster score</b> · the first 5 seconds · each mark is one thruster on for 0.035 s · ' + pulses + ' marks';
+
+  var total = F.totals.fire_seconds.reduce(function (a, b) { return a + b; }, 0), sp = Math.sqrt(dot(F.end.v, F.end.v)), rt = Math.sqrt(dot(F.end.w, F.end.w)) * DEG;
+  var peak = 0; W3.forEach(function (w) { peak = Math.max(peak, Math.sqrt(dot(w, w)) * DEG); });
+  document.getElementById('read').innerHTML =
+    '<div class="r"><span>Length of run</span><b>' + F.ticks.toLocaleString('en-US') + ' ticks · 1,000 s</b></div>' +
+    '<div class="r"><span>Thruster time, all sixteen</span><b>' + total.toFixed(1).replace(/\B(?=(\d{3})+(?!\d))/g, ',') + ' s</b></div>' +
+    '<div class="r"><span>Distance from the start</span><b>' + dist.toFixed(1) + ' m</b></div>' +
+    '<div class="r"><span>Speed</span><b>' + sp.toFixed(3) + ' m/s</b></div>' +
+    '<div class="r"><span>Turning at the end</span><b>' + rt.toFixed(2) + ' deg/s</b></div>' +
+    '<div class="r"><span>Turning at its fastest</span><b>' + peak.toFixed(2) + ' deg/s</b></div>' +
+    '<div class="r"><span>Turning allowed at first contact</span><b>0.20 deg/s</b></div>' +
+    '<div class="r"><span>Hash after the last tick</span><b>' + F.end.h + '</b></div>';
+  document.getElementById('tb').innerHTML = SB2.titleBlock([['Drawing', 'SB-F-000'], ['Title', 'Gate run, seed 1', 1.2], ['Source', 'crates/core, scripted run', 1.8], ['Check', 'Replay hash = scripted_run at 5 tick counts', 2.9], ['Vehicle', 'Placeholder, 12,000 kg estimate', 2.2], ['Date', '2026-11-18']], 'left:48px;right:48px;bottom:40px');
+  document.fonts.ready.then(function () { document.body.dataset.ready = '1'; });
+})();
+</script>
+</body></html>

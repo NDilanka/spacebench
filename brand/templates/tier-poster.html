@@ -11,34 +11,35 @@
 <script src="template.js"></script>
 </head>
 <body class="sb t t-tier">
-<!-- 1080 x 1350. Variants: ?tier=1..6&theme=light|dark -->
-<div class="sb-meta sb-meta--rule"><span>SpaceBench Dock</span><span>Difficulty tiers</span><span id="page"></span><span id="ref"></span></div>
+<!-- 1080 x 1350. Variants: ?tier=1..6&theme=light|dark. A flat piece: no texture. Every figure is drawn from DESIGN.md or the simulator's own table. -->
+<div class="sb-meta sb-meta--rule"><span>SpaceBench Dock</span><span>Difficulty tiers</span><span id="page"></span></div>
 <div class="idx"><b id="num"></b><div class="dots" id="dots"></div></div>
 <h1 id="h"></h1>
-<div class="fig grow" id="fig"><div id="figin"></div></div>
+<div class="fig grow" id="fig"><div id="figin"></div><p id="figcap"></p></div>
 <div class="foot">
   <table class="sb-spec" id="spec"></table>
-  <div style="display:grid;gap:18px;justify-items:end"><span class="sb-specimen">Tier parameters are provisional</span><span class="lk" data-sb-logo="lockup" data-follow-sim></span></div>
+  <div class="sign"><span class="sb-specimen">Tier parameters are provisional</span><span class="lk" data-sb-logo="lockup" data-follow-sim></span></div>
 </div>
 <script>
 (function () {
   var P = SBParams, G = SBGraphics, n = P.num('tier', 3), t = G.TIERS[n - 1], $ = function (i) { return document.getElementById(i); };
-  $('page').textContent = '0' + n + '/06'; $('ref').textContent = 'Ref. SBD-T' + n;
-  $('num').innerHTML = '0' + n + '<i>/</i>';
+  $('page').textContent = 'Tier ' + n + ' of 6';
+  $('num').innerHTML = '0' + n;
   $('dots').innerHTML = G.tierDots(n, { r: 7, gap: 8 });
-  $('h').innerHTML = t.name + '. <span class="sb-tone">' + t.note + '.</span>';
-  var fig = { 1: G.approachArcs({ width: 960, height: 430 }), 2: null,
-    3: G.approachChart(G.specimenFlight(421, 3), { width: 960, height: 380 }),
-    4: G.thrusters({ stuck: [3] }), 5: G.thrusters({ stuck: [], failed: [2, 9, 12] }), 6: G.orbit({ size: 360 }) }[n];
-  if (n === 2) {
-    fig = '<div style="display:grid;grid-template-columns:repeat(6,1fr);gap:1px;background:var(--sb-line);border:1px solid var(--sb-line)">' + ['tx', 'ty', 'tz', 'roll', 'pitch', 'yaw'].map(function (k, i) {
-      return '<div style="background:var(--sb-bg);padding:34px 0 22px;display:grid;justify-items:center;gap:22px;color:' + (i > 2 ? 'var(--sb-accent)' : 'var(--sb-fg)') + '">' + G.icon(k, { size: 84 }) + '<span class="cap" style="color:var(--sb-fg)">' + G.AXES[i] + '</span></div>';
-    }).join('') + '</div>';
-  }
+  $('h').innerHTML = t.name + '.<br><span class="sb-tone">' + t.note + '.</span>';
+  var placeholder = 'Sixteen thrusters, 400 N each. The layout is the simulator\u2019s placeholder table, not Dragon\u2019s.';
+  var F = {
+    1: [G.approachArcs({ width: 960, height: 430 }), 'Start at 400 m. Holds at 250, 30 and 10 m. Keep-out sphere 200 m.'],
+    2: ['<div class="axes">' + ['tx', 'ty', 'tz', 'roll', 'pitch', 'yaw'].map(function (k, i) { return '<div' + (i > 2 ? ' class="rot"' : '') + '>' + G.icon(k, { size: 84 }) + '<span class="cap">' + G.AXES[i] + '</span></div>'; }).join('') + '</div>', 'Three axes of translation, three of rotation. Every one starts off target.'],
+    3: [G.lidarNoise({ width: 960, scale: 12 }), 'Range noise at 10 m: about 34 mm along the line of sight and 6 mm sideways. The ellipse keeps that ratio. From a simulation study (Madonna et al., 2025).'],
+    4: [G.thrusters({ stuck: [2] }), 'Example: thruster 2 stuck on. Which one sticks is not fixed yet. ' + placeholder],
+    5: [G.thrusters({ failed: [2, 9, 12] }), 'Example: three thrusters lost. How many fail, and when, is not fixed yet. ' + placeholder],
+    6: [G.orbit({ size: 520 }), 'The target tumbles, and both vehicles follow orbital relative dynamics.']
+  }[n];
   if (n >= 4) $('fig').classList.add('sq');
-  $('figin').innerHTML = fig;
+  $('figin').innerHTML = F[0]; $('figcap').textContent = F[1];
   var extra = { 1: ['Offset', 'Along the approach axis'], 2: ['Offset', 'Translation and rotation'], 3: ['Added', 'Sensor noise, fuel limit'], 4: ['Added', 'Actuator errors, one stuck thruster'], 5: ['Added', 'Several thruster failures'], 6: ['Added', 'Tumbling target, orbital dynamics'] }[n];
-  $('spec').innerHTML = [extra, ['Seeds', '30 hidden'], ['Attempts', 'One'], ['Pass rule', 'Contact conditions, IDSS Rev. F']].map(function (r) { return '<tr><th>' + r[0] + '</th><td class="num" style="font-family:var(--sb-font-sans)">' + r[1] + '</td></tr>'; }).join('');
+  $('spec').innerHTML = [extra, ['Seeds', '30 hidden'], ['Attempts', 'One'], ['Pass rule', 'Contact conditions, IDSS Rev. F']].map(function (r) { return '<tr><th>' + r[0] + '</th><td>' + r[1] + '</td></tr>'; }).join('');
   P.done();
 })();
 </script>

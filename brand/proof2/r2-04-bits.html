@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><title>SB-P-020. Two builds, one flight</title>
+<link rel="stylesheet" href="r2.css">
+<style>
+#sheet { width: 1200px; height: 1946px; }
+.hdr { position: absolute; left: 48px; right: 48px; top: 40px; display: flex; justify-content: space-between; }
+h1 { position: absolute; left: 44px; top: 84px; font: 700 84px/.98 var(--sans); letter-spacing: -.05em; }
+#copy { position: absolute; left: 640px; top: 100px; width: 512px; font: 400 16.5px/1.46 var(--sans); }
+#copy p + p { margin-top: 10px; }
+#draw { position: absolute; left: 0; top: 0; }
+.lab { position: absolute; left: 48px; right: 48px; display: flex; justify-content: space-between; }
+#none { position: absolute; left: 48px; right: 48px; top: 692px; height: 50px; display: flex; align-items: center; justify-content: space-between; border-top: 1.25px solid var(--fg); border-bottom: 1.25px solid var(--fg); }
+#none strong { font: 700 24px/1 var(--sans); letter-spacing: -.02em; }
+#b { position: absolute; left: 48px; top: 1064px; right: 48px; display: grid; grid-template-columns: 500px 1fr; column-gap: 44px; align-items: end; }
+#b h2 { font: 700 40px/1.02 var(--sans); letter-spacing: -.04em; }
+#b p { font: 400 15.5px/1.45 var(--sans); }
+#c { position: absolute; left: 48px; right: 48px; top: 1640px; display: grid; grid-template-columns: 400px 1fr; column-gap: 44px; align-items: start; border-top: 1.25px solid var(--fg); padding-top: 22px; }
+#c p { font: 400 16.5px/1.46 var(--sans); }
+</style></head>
+<body><div class="sheet" id="sheet">
+  <svg id="draw" width="1200" height="1946"></svg>
+  <div class="hdr cap"><div><b style="color:var(--fg)">SpaceBench</b></div><div>Determinism</div><div>Every mark on this sheet is from a run</div></div>
+  <h1>One flight.<br>Two builds.<br>The same bits.</h1>
+  <div id="copy">
+    <p>This is seed 1 of the gate's scripted flight: sixteen thrusters fired at random for 160 ticks of 0.005 s. After every tick the whole state is hashed, and the hash is chained to the one before.</p>
+    <p>Each column is one 64-bit hash. Black is a 1. The native build is drawn above the line and the WebAssembly build below it, mirrored. The band between them is where they differ.</p>
+  </div>
+  <div class="lab cap" style="top:438px"><span><b>Native build</b></span><span>Bit 63 at the top</span></div>
+  <div id="none"><span class="cap"><b>Difference</b></span><strong>None. 161 of 161 hashes are equal.</strong><span class="cap">Seeds 1, 2 and 3735928559</span></div>
+  <div class="lab cap" style="top:978px"><span><b>WebAssembly build</b>, run in Node</span><span>Bit 63 at the bottom</span></div>
+  <div id="b">
+    <h2>Break one function, and the gate sees it.</h2>
+    <p>The control: in a scratch copy, the sine and cosine in one function were switched from libm to Rust's standard library, on the native build only. In the lead's run the 34 physics tests still passed. The hashes did not. Each band below is the difference between the two builds, for one seed.</p>
+  </div>
+  <div id="c">
+    <div><div id="dots"></div><div class="cap" style="margin-top:14px">of 1,000,000 inputs</div></div>
+    <div>
+      <p>That is how often <span class="num">atan2</span> from Rust's standard library gave different bits from libm on the native build, in a probe on this machine. On WebAssembly it never differed. So every sine, cosine and arctangent in the core goes through libm 0.2.16, and a lint forbids the rest.</p>
+      <svg id="strip" width="660" height="44" style="margin-top:16px"></svg>
+    </div>
+  </div>
+  <div id="tb"></div>
+</div>
+<script src="data/hashes.js"></script><script src="data/negctl.js"></script><script src="data/hershey.js"></script><script src="r2.js"></script>
+<script>
+(function () {
+  var f = SB2.f, FG = '#0B0E16', X0 = 48, CW = 6.85, N = 161;
+  function bits(h) { var o = []; for (var i = 0; i < 16; i++) { var v = parseInt(h[i], 16); o.push(v >> 3 & 1, v >> 2 & 1, v >> 1 & 1, v & 1); } return o; } /* o[0] is bit 63 */
+  /* one band. rows[t] is an array of 64 bits; flip puts bit 63 at the bottom */
+  function band(rows, y, ch, flip) {
+    var d = '';
+    rows.forEach(function (b, t) {
+      var run = -1;
+      for (var k = 0; k <= 64; k++) {
+        var on = k < 64 && b[flip ? 63 - k : k];
+        if (on && run < 0) run = k;
+        if (!on && run >= 0) { d += 'M' + f(X0 + t * CW) + ' ' + f(y + run * ch) + 'h' + f(CW - .9) + 'v' + f((k - run) * ch) + 'h' + f(-(CW - .9)) + 'z'; run = -1; }
+      }
+    });
+    return '<path d="' + d + '" fill="' + FG + '"/>';
+  }
+  var H = window.SB_HASHES.seeds, NC = window.SB_NEGCTL.seeds, s = '';
+  var nat = H['1'].native.map(bits), was = H['1'].wasm.map(bits), CH = 3.4;
+  s += band(nat, 462, CH, false) + band(was, 752, CH, true);
+  /* tick axis */
+  var ay = 1010;
+  s += '<path class="cut" d="M' + X0 + ' ' + ay + 'H' + f(X0 + N * CW) + '"/>';
+  for (var t = 0; t <= 160; t += 5) { var x = X0 + (t + .5) * CW, L = t % 20 === 0 ? 10 : 5; s += '<path class="dim" style="stroke-width:' + (t % 20 === 0 ? 1.1 : .6) + '" d="M' + f(x) + ' ' + ay + 'v' + L + '"/>'; if (t % 20 === 0) s += '<text x="' + f(x) + '" y="' + (ay + 26) + '" text-anchor="' + (t === 0 ? 'start' : t === 160 ? 'end' : 'middle') + '" font-family="Geist Mono" font-size="11" font-weight="500" fill="' + FG + '">' + (t === 0 ? 'TICK 0' : t === 160 ? '160 · 0.8 S' : t) + '</text>'; }
+  /* the control: difference bands */
+  var by = 1238, bh = 1.25, gap = 124;
+  ['1', '2', '3735928559'].forEach(function (seed, i) {
+    var ref = H[seed].wasm.map(bits), brk = NC[seed].native_std.map(bits), y = by + i * gap, first = NC[seed].first_differing_tick;
+    var x = brk.map(function (b, t) { return b.map(function (v, k) { return v ^ ref[t][k]; }); });
+    s += '<path class="dim" style="stroke-width:.6" d="M' + X0 + ' ' + (y - 4) + 'H' + f(X0 + N * CW) + 'M' + X0 + ' ' + f(y + 64 * bh + 4) + 'H' + f(X0 + N * CW) + '"/>' + band(x, y, bh, false);
+    var fx = X0 + first * CW;
+    s += '<path d="M' + f(fx - 1.6) + ' ' + (y - 4) + 'V' + f(y + 64 * bh + 14) + '" stroke="' + FG + '" stroke-width="2"/>';
+    s += '<text x="' + X0 + '" y="' + (y - 14) + '" font-family="Geist Mono" font-size="11" font-weight="600" letter-spacing=".8" fill="' + FG + '">SEED ' + seed + ' · ' + (first > 1 ? 'EQUAL FOR ' + first + ' TICKS · ' : '') + 'FIRST DIFFERENCE AT TICK ' + first + '</text>';
+  });
+  s += SB2.plot('once it differs, it never agrees again', { x: X0 + N * CW, y: by + 2 * gap + 64 * bh + 38, size: 13, anchor: 'end' });
+  document.getElementById('draw').innerHTML = s;
+
+  document.getElementById('dots').innerHTML = SB2.dots('125,801', { pitch: 10.3, fg: FG });
+  var st = '<rect x=".6" y=".6" width="658.8" height="16" fill="none" stroke="' + FG + '" stroke-width="1.25"/><rect x=".6" y=".6" width="' + f(658.8 * 0.125801) + '" height="16" fill="' + FG + '"/>';
+  st += '<text x="0" y="38" font-family="Geist Mono" font-size="11" font-weight="500" letter-spacing=".8" fill="' + FG + '">12.6% DIFFERED ON NATIVE</text><text x="659" y="38" text-anchor="end" font-family="Geist Mono" font-size="11" font-weight="500" letter-spacing=".8" fill="' + FG + '">0 DIFFERED ON WEBASSEMBLY</text>';
+  document.getElementById('strip').innerHTML = st;
+  document.getElementById('tb').innerHTML = SB2.titleBlock([['Drawing', 'SB-P-020'], ['Title', 'Two builds, one flight', 1.5], ['Hashes', 'Gate tools, run 2026-11-18', 1.7], ['Control', 'ORDERS.md 2026-11-17, rerun 2026-11-18', 2.4], ['Probe', 'AGENTS.md']], 'left:48px;right:48px;bottom:40px');
+  document.fonts.ready.then(function () { document.body.dataset.ready = '1'; });
+})();
+</script>
+</body></html>

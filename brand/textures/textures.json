@@ -1,0 +1,131 @@
+{
+  "source": "crates/core scripted_run, seed 1, 200000 ticks, replayed by build/gen/sbdump",
+  "checks": [
+    "check seed=1 ticks=0 replay=9cd04be66174cce4 scripted_run=9cd04be66174cce4 MATCH",
+    "check seed=1 ticks=1 replay=677bdf615f524a79 scripted_run=677bdf615f524a79 MATCH",
+    "check seed=1 ticks=7 replay=79dddbade16d0c12 scripted_run=79dddbade16d0c12 MATCH",
+    "check seed=1 ticks=1000 replay=0599a4b85f45a1dd scripted_run=0599a4b85f45a1dd MATCH",
+    "check seed=1 ticks=200000 replay=afbdc94cf80ce4e1 scripted_run=afbdc94cf80ce4e1 MATCH"
+  ],
+  "slots": 28572,
+  "final_hash": "afbdc94cf80ce4e1",
+  "points": 1600648,
+  "picture_choices": {
+    "points_per_firing": 14,
+    "spread_rad": [
+      0.02,
+      0.12
+    ],
+    "levels": [
+      0.11205549958618703,
+      0.24925133652017864
+    ],
+    "map": "Lambert equal-area, centred on the nose direction at tick 0",
+    "grain_seed": "final hash"
+  },
+  "note": "A picture of the run, not a measurement. No physical plume model.",
+  "files": [
+    {
+      "file": "plume-banner-film.jpg",
+      "px": [
+        3000,
+        1000
+      ],
+      "window": [
+        3.0,
+        1.0
+      ],
+      "centre": [
+        -0.75,
+        0.15
+      ],
+      "ground": "film",
+      "dark_share": 0.029
+    },
+    {
+      "file": "plume-banner-ink.jpg",
+      "px": [
+        3000,
+        1000
+      ],
+      "window": [
+        3.0,
+        1.0
+      ],
+      "centre": [
+        -0.75,
+        0.15
+      ],
+      "ground": "ink",
+      "dark_share": 0.029
+    },
+    {
+      "file": "plume-square-film.jpg",
+      "px": [
+        1600,
+        1600
+      ],
+      "window": [
+        1.3,
+        1.3
+      ],
+      "centre": [
+        0.3,
+        0.72
+      ],
+      "ground": "film",
+      "dark_share": 0.067
+    },
+    {
+      "file": "plume-square-ink.jpg",
+      "px": [
+        1600,
+        1600
+      ],
+      "window": [
+        1.3,
+        1.3
+      ],
+      "centre": [
+        0.3,
+        0.72
+      ],
+      "ground": "ink",
+      "dark_share": 0.067
+    },
+    {
+      "file": "plume-sheet-film.jpg",
+      "px": [
+        2400,
+        1600
+      ],
+      "window": [
+        2.1,
+        1.4
+      ],
+      "centre": [
+        -0.75,
+        -0.35
+      ],
+      "ground": "film",
+      "dark_share": 0.065
+    },
+    {
+      "file": "plume-sheet-ink.jpg",
+      "px": [
+        2400,
+        1600
+      ],
+      "window": [
+        2.1,
+        1.4
+      ],
+      "centre": [
+        -0.75,
+        -0.35
+      ],
+      "ground": "ink",
+      "dark_share": 0.065
+    }
+  ]
+}
