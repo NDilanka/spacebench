@@ -1,0 +1,20 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><title>Proof 09. The matched board</title>
+<link rel="stylesheet" href="proof.css">
+<style>
+#sheet { width: 1600px; height: 1000px; background: #090C13 url("img/pilot.png") 0 0 / 1600px 1000px no-repeat; image-rendering: pixelated; }
+h1 { position: absolute; left: 40px; top: 96px; width: 300px; font: 700 46px/0.98 var(--sans); letter-spacing: -.045em; }
+h1 span { color: var(--on-ink-3); }
+.r { position: absolute; right: 40px; top: 100px; width: 250px; }
+.r div { border-top: 1px solid var(--ink-line-2); padding: 9px 0 10px; font: 400 14px/1.35 var(--sans); color: var(--on-ink-2); }
+.r div b { display: block; font: 600 9.5px/1.6 var(--mono); letter-spacing: .09em; text-transform: uppercase; color: var(--on-ink); }
+.foot { position: absolute; left: 40px; right: 40px; bottom: 28px; display: flex; justify-content: space-between; align-items: flex-end; }
+</style></head>
+<body><div class="sheet ink" id="sheet">
+  <div class="hdr mono"><span>SpaceBench Dock</span><span class="dim">Proof No. 09 · The matched board</span><span class="dim">09/09</span><span class="dim">Human pilot</span></div>
+  <h1>Same display.<br>Same commands.<br><span>Same pause.</span></h1>
+  <div class="r"><div><b>Pilot</b>A person, with an account.</div><div><b>Display</b>The one the models read.</div><div><b>Commands</b>Pulse, then coast.</div><div><b>Clock</b>Stopped while the pilot thinks.</div><div style="border-bottom:1px solid var(--ink-line-2)"><b>Compared with models</b>This board only.</div></div>
+  <div class="foot"><div class="mono s dim">Drawn from shapes by gen/pilot.py and put through an 8 × 8 ordered dither. No photograph used.</div><div class="mono s"><span class="stamp">Illustration</span></div></div>
+</div>
+<script>document.fonts.ready.then(function () { document.body.dataset.ready = '1'; });</script>
+</body></html>

@@ -1,5 +1,5 @@
-/* SpaceBench graphics. Every device here is drawn from simulator quantities:
-   pulses, coast times, ranges, hold points, tolerances. Nothing is decorative.
+/* SpaceBench graphics. Every device here is drawn from scenario constants or from the simulation core's
+   own tables. None of them invents a flight or a result: with no data they draw an empty state.
    All functions return an SVG string. Colours default to CSS custom properties
    from tokens.css; pass { colors: { fg, muted, line, accent } } for fixed values. */
 (function (root) {
@@ -7,8 +7,8 @@
 
   var DEF = {
     fg: 'currentColor',
-    muted: 'var(--sb-fg-3, #8A8A84)',
-    line: 'var(--sb-line-strong, #C2C2BD)',
+    muted: 'var(--sb-fg-3, #7C8493)',
+    line: 'var(--sb-line-strong, #A9B0BC)',
     accent: 'var(--sb-accent, currentColor)',
     mono: 'var(--sb-font-mono, "Geist Mono", ui-monospace, monospace)'
   };
@@ -30,7 +30,7 @@
     { n: 1, name: 'Aligned approach', note: 'No noise' },
     { n: 2, name: 'Six-axis offset', note: 'Full offset in every axis' },
     { n: 3, name: 'Noise and fuel', note: 'Sensor noise, fuel limit' },
-    { n: 4, name: 'Stuck thruster', note: 'Actuator errors, one stuck thruster' },
+    { n: 4, name: 'Stuck thruster', note: 'With actuator errors' },
     { n: 5, name: 'Failures mid-approach', note: 'Several thruster failures' },
     { n: 6, name: 'Tumbling target', note: 'Orbital dynamics on' }
   ];
@@ -44,97 +44,8 @@
   }
   function label(x, y, text, c, o) {
     o = o || {};
-    return '<text x="' + f(x) + '" y="' + f(y) + '" fill="' + (o.fill || c.muted) + '" font-family=\'' + c.mono + '\' font-size="' + (o.size || 9) +
+    return '<text x="' + f(x) + '" y="' + f(y) + '" fill="' + (o.fill || c.muted) + '" font-family=\'' + c.mono + '\' font-size="' + (o.size || 11) +
       '" font-weight="500" letter-spacing="' + (o.track == null ? 0.7 : o.track) + '" text-anchor="' + (o.anchor || 'start') + '">' + text + '</text>';
-  }
-
-  /* Deterministic generator (mulberry32). Same seed, same picture, on every machine. */
-  function rng(seed) {
-    var a = seed >>> 0;
-    return function () {
-      a |= 0; a = (a + 0x6D2B79F5) | 0;
-      var t = Math.imul(a ^ (a >>> 15), 1 | a);
-      t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
-      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
-    };
-  }
-  function gauss(r) { return Math.sqrt(-2 * Math.log(1 - r())) * Math.cos(2 * Math.PI * r()); }
-
-  /* A SPECIMEN flight: a plausible action log for layout work until real replays exist.
-     It is not a result and must be labelled as a specimen wherever it is shown. */
-  function specimenFlight(seed, tier) {
-    tier = tier || 1;
-    var r = rng((seed >>> 0) * 31 + tier * 977 + 7);
-    var T = Math.round(1500 + r() * 1500 + tier * 180);
-    var events = [
-      { name: 'HOLD 250', range: 250, t: T * (0.16 + r() * 0.06) },
-      { name: 'HOLD 30', range: 30, t: T * (0.52 + r() * 0.08) },
-      { name: 'HOLD 10', range: 10, t: T * (0.76 + r() * 0.06) },
-      { name: 'CONTACT', range: 0, t: T }
-    ];
-    var knots = [[0, START]].concat(events.map(function (e) { return [e.t, e.range]; }));
-    function rangeAt(t) {
-      for (var i = 1; i < knots.length; i++) {
-        if (t <= knots[i][0]) {
-          var u = (t - knots[i - 1][0]) / (knots[i][0] - knots[i - 1][0]);
-          u = u * u * (3 - 2 * u);
-          var a = Math.log(1 + knots[i - 1][1]), b = Math.log(1 + knots[i][1]);
-          return Math.exp(a + (b - a) * u) - 1;
-        }
-      }
-      return 0;
-    }
-    var pulses = [], n = 46 + tier * 22 + Math.floor(r() * 20);
-    for (var i = 0; i < n; i++) {
-      var t;
-      if (r() < 0.65) { var e = events[Math.floor(r() * events.length)]; t = e.t + gauss(r) * T * 0.035 - T * 0.02; }
-      else t = r() * T;
-      t = clamp(t, 2, T - 1);
-      var axis = r() < 0.62 ? Math.floor(r() * 3) : 3 + Math.floor(r() * 3);
-      var dur = 0.035 * Math.pow(2, Math.floor(r() * r() * 7));
-      pulses.push({ t: Math.round(t * 10) / 10, dur: Math.round(dur * 1000) / 1000, axis: axis, dir: r() < 0.5 ? -1 : 1 });
-    }
-    pulses.sort(function (a, b) { return a.t - b.t; });
-    var amp = tier >= 2 ? 0.55 + r() * 0.35 : 0.12 + r() * 0.1, ph = r() * 6.283, w = 2.5 + r() * 3.5, path = [];
-    for (var k = 0; k <= 180; k++) {
-      var tt = T * k / 180, rg = rangeAt(tt);
-      var env = Math.pow(rg / START, 0.55);
-      path.push({ t: tt, range: rg, off: amp * env * Math.cos(w * 6.283 * k / 180 + ph) + 0.05 * env * gauss(r) * (tier >= 3 ? 1 : 0) });
-    }
-    var q = function (lo, hi) { return Math.round((lo + r() * (hi - lo)) * 1000) / 1000; };
-    var hard = tier * 0.035;
-    var contact = {
-      closing: q(0.055, 0.092 + hard * 0.35), lateral: q(0.004, 0.022 + hard * 0.2),
-      pyRate: q(0.01, 0.1 + hard), rollRate: q(0.01, 0.09 + hard),
-      offset: q(0.005, 0.05 + hard * 0.5), pyAngle: q(0.1, 1.6 + tier * 0.55), rollAngle: q(0.1, 1.4 + tier * 0.6)
-    };
-    var pass = LIMITS.every(function (l) { var v = contact[l.key]; return v <= l.max && (l.min == null || v >= l.min); });
-    var fuel = Math.round(pulses.reduce(function (s, p) { return s + p.dur; }, 0) * 100) / 100;
-    return { specimen: true, seed: seed, tier: tier, duration: T, events: events, pulses: pulses, path: path, contact: contact, pass: pass, burn: fuel, rangeAt: rangeAt };
-  }
-
-  /* Flight signature: the action log as a barcode. One bar per thruster pulse.
-     x = time of the pulse, bar width = pulse length (log scale), bar height = axis group
-     (approach axis full height, cross axes 82%, rotations 60%). Accent bars are events. */
-  function flightSignature(flight, o) {
-    o = o || {};
-    var W = o.width || 640, H = o.height || 96, c = colors(o), labels = o.labels !== false;
-    var barH = labels ? H - 20 : H, x0 = 12, x1 = W - 12, T = flight.duration;
-    var hs = [1, 0.82, 0.82, 0.6, 0.6, 0.6], s = open(W, H, 'role="img" aria-label="Flight signature, seed ' + flight.seed + '"');
-    s += '<g fill="' + c.fg + '">';
-    [0, 4, W - 5.5, W - 1.5].forEach(function (x) { s += '<rect x="' + f(x) + '" width="1.5" height="' + f(barH) + '"/>'; });
-    flight.pulses.forEach(function (p) {
-      var w = clamp(0.9 + Math.log(p.dur / 0.035) / Math.LN2 * 0.6, 0.9, 5.2);
-      s += '<rect x="' + f(x0 + p.t / T * (x1 - x0) - w / 2) + '" width="' + f(w) + '" height="' + f(barH * hs[p.axis]) + '"/>';
-    });
-    s += '</g>';
-    flight.events.forEach(function (e, i) {
-      var x = x0 + e.t / T * (x1 - x0), last = i === flight.events.length - 1;
-      s += '<rect x="' + f(x - 1.25) + '" width="2.5" height="' + f(barH + (labels ? 6 : 0)) + '" fill="' + c.accent + '"/>';
-      if (labels) s += label(last ? x + 1.25 : x, H - 2, e.range ? e.range + ' M' : 'CONTACT', c, { anchor: last ? 'end' : 'middle', size: 8 });
-    });
-    if (labels) s += label(0, H - 2, 'T+0', c, { size: 8 });
-    return s + '</svg>';
   }
 
   function xScale(range, x0, x1) { return x1 - (x1 - x0) * Math.log(1 + range / 4) / Math.log(1 + START / 4); }
@@ -154,55 +65,17 @@
       var col = here ? c.accent : (done && row.k !== 'muted' ? c.fg : c.muted);
       s += '<path d="M' + f(x) + ' ' + base + 'A' + f(rad) + ' ' + f(rad) + ' 0 0 1 ' + port + ' ' + base + '" stroke="' + col + '" stroke-width="' + (here ? 1.5 : 1) + '"' +
         (row.k === 'dot' ? ' stroke-dasharray="1 5" stroke-linecap="round" stroke-width="1.6"' : '') + '/>';
-      if (row.k === 'dot') s += '<circle cx="' + f(x) + '" cy="' + base + '" r="3" fill="var(--sb-bg, #F3F3F1)" stroke="' + col + '"/>';
+      if (row.k === 'dot') s += '<circle cx="' + f(x) + '" cy="' + base + '" r="3" fill="var(--sb-bg, #ECEEF1)" stroke="' + col + '"/>';
       else s += '<circle cx="' + f(x) + '" cy="' + base + '" r="3" fill="' + col + '"/>';
       if (row.k === 'dot') {
-        s += label(x + rad, base - rad + 16, row.t + ' ' + row.r + ' M', c, { anchor: 'middle', size: 8 });
+        s += label(x + rad, base - rad + 18, row.t + ' ' + row.r + ' M', c, { anchor: 'middle' });
       } else {
-        s += label(x, base + 18, row.r + ' M', c, { anchor: 'middle', fill: here ? c.accent : c.fg });
-        s += label(x, base + 30, row.t, c, { anchor: 'middle', size: 8 });
+        s += label(x, base + 20, row.r + ' M', c, { anchor: 'middle', fill: here ? c.accent : c.fg });
+        s += label(x, base + 35, row.t, c, { anchor: 'middle' });
       }
     });
     s += '<circle cx="' + port + '" cy="' + base + '" r="8" stroke="' + c.accent + '"/><circle cx="' + port + '" cy="' + base + '" r="3.5" fill="' + c.accent + '"/>';
-    s += label(port, base + 18, '0 M', c, { anchor: 'middle', fill: c.fg }) + label(port, base + 30, 'CONTACT', c, { anchor: 'middle', size: 8 });
-    return s + '</svg>';
-  }
-
-  /* Approach chart: one flight, side view. Range runs right to left on a log scale and
-     ends on the datum bar (the port), the same bar as in the logo. Not to scale. */
-  function approachChart(flight, o) {
-    o = o || {};
-    var W = o.width || 760, H = o.height || 300, c = colors(o), cy = H / 2 - 6, x0 = 28, port = W - 40;
-    var half = function (x) { var u = (port - x) / (port - x0); return 5 + u * (H / 2 - 44); };
-    var s = open(W, H, 'role="img" aria-label="Approach chart, seed ' + flight.seed + '"');
-    s += '<line x1="' + (x0 - 14) + '" y1="' + cy + '" x2="' + (W - 8) + '" y2="' + cy + '" stroke="' + c.line + '"/>';
-    s += '<circle cx="' + (x0 - 14) + '" cy="' + cy + '" r="2.2" fill="' + c.line + '"/><circle cx="' + (W - 8) + '" cy="' + cy + '" r="2.2" fill="' + c.line + '"/>';
-    [-1, 1].forEach(function (sg) {
-      s += '<line x1="' + x0 + '" y1="' + f(cy + sg * half(x0)) + '" x2="' + port + '" y2="' + f(cy + sg * half(port)) + '" stroke="' + c.muted + '" stroke-dasharray="5 4"/>';
-    });
-    HOLDS.concat([KEEP_OUT]).forEach(function (rg) {
-      var x = xScale(rg, x0, port), h = half(x) + 10, ko = rg === KEEP_OUT;
-      s += '<line x1="' + f(x) + '" y1="' + f(cy - h) + '" x2="' + f(x) + '" y2="' + f(cy + h) + '" stroke="' + (ko ? c.muted : c.fg) + '"' + (ko ? ' stroke-dasharray="1 4" stroke-linecap="round" stroke-width="1.4"' : '') + '/>';
-      s += ko ? label(x + 5, cy + h + 4, 'KEEP-OUT ' + rg + ' M', c, { size: 8 }) : label(x, cy - h - 7, rg + ' M', c, { anchor: 'middle', fill: c.fg });
-      if (!ko) s += '<circle cx="' + f(x) + '" cy="' + f(cy - h) + '" r="2" fill="' + c.fg + '"/><circle cx="' + f(x) + '" cy="' + f(cy + h) + '" r="2" fill="' + c.fg + '"/>';
-    });
-    var d = '';
-    flight.path.forEach(function (p, i) {
-      var x = xScale(p.range, x0, port);
-      d += (i ? 'L' : 'M') + f(x) + ' ' + f(cy + clamp(p.off, -0.95, 0.95) * half(x));
-    });
-    s += '<path d="' + d + '" stroke="' + c.accent + '" stroke-width="1.6" stroke-linejoin="round"/>';
-    var p0 = flight.path[0], sx = xScale(p0.range, x0, port), sy = cy + p0.off * half(sx);
-    s += '<circle cx="' + f(sx) + '" cy="' + f(sy) + '" r="3.5" fill="' + c.accent + '"/>';
-    s += '<rect x="' + port + '" y="' + f(cy - 26) + '" width="6" height="52" fill="' + c.fg + '"/>';
-    s += label(port + 3, cy + 42, 'PORT', c, { anchor: 'middle', fill: c.fg });
-    var by = H - 16;
-    s += '<g fill="' + c.fg + '">';
-    flight.pulses.forEach(function (p) {
-      s += '<rect x="' + f(xScale(flight.rangeAt(p.t), x0, port) - 0.4) + '" y="' + f(by - (p.axis < 3 ? 9 : 5)) + '" width="0.8" height="' + (p.axis < 3 ? 9 : 5) + '"/>';
-    });
-    s += '</g><line x1="' + x0 + '" y1="' + by + '" x2="' + port + '" y2="' + by + '" stroke="' + c.line + '"/>';
-    s += label(x0, H - 3, 'PULSES BY RANGE', c, { size: 8 }) + label(port, H - 3, 'LOG RANGE. NOT TO SCALE', c, { size: 8, anchor: 'end' });
+    s += label(port, base + 20, '0 M', c, { anchor: 'middle', fill: c.fg }) + label(port, base + 35, 'CONTACT', c, { anchor: 'end' });
     return s + '</svg>';
   }
 
@@ -220,7 +93,7 @@
     s += '<line x1="' + f(tx + 6) + '" y1="' + f(ty - 6) + '" x2="' + f(S - 30) + '" y2="' + f(ty - 46) + '" stroke="' + c.muted + '"/>' + label(S - 28, ty - 50, 'TARGET', c, { anchor: 'end', fill: c.fg });
     var b = 2.5, tr = tilt * Math.PI / 180, ex = rx * 0.96 * Math.cos(b), ey = ry * 1.5 * Math.sin(b);
     var qx = m + ex * Math.cos(tr) - ey * Math.sin(tr), qy = m + ex * Math.sin(tr) + ey * Math.cos(tr);
-    s += '<circle cx="' + f(qx) + '" cy="' + f(qy) + '" r="4.5" fill="var(--sb-bg, #F3F3F1)" stroke="' + c.fg + '" stroke-width="1.2"/>';
+    s += '<circle cx="' + f(qx) + '" cy="' + f(qy) + '" r="4.5" fill="var(--sb-bg, #ECEEF1)" stroke="' + c.fg + '" stroke-width="1.2"/>';
     s += '<line x1="' + f(qx - 6) + '" y1="' + f(qy + 6) + '" x2="34" y2="' + f(qy + 44) + '" stroke="' + c.muted + '"/>' + label(30, qy + 56, 'CHASER', c, { fill: c.fg });
     return s + '</svg>';
   }
@@ -244,70 +117,34 @@
     return s + '</svg>';
   }
 
-  function inside(pt, poly) {
-    var x = pt[0], y = pt[1], inP = false;
-    for (var i = 0, j = poly.length - 1; i < poly.length; j = i++) {
-      var xi = poly[i][0], yi = poly[i][1], xj = poly[j][0], yj = poly[j][1];
-      if ((yi > y) !== (yj > y) && x < (xj - xi) * (y - yi) / (yj - yi) + xi) inP = !inP;
-    }
-    return inP;
-  }
-
-  /* The mark sampled on a dot matrix. Unlit cells stay visible as rings. */
-  function dotMark(sim, o) {
-    o = o || {};
-    var n = o.cells || 24, S = o.size || 360, c = colors(o), g = root.SBLogo && root.SBLogo.data.geometry;
-    if (!g) return '';
-    var deg = g.rotation[sim || 'parent'] * Math.PI / 180, cx = g.canvas / 2, p = S / n, rad = p * 0.34;
-    var s = open(S, S, 'role="img" aria-label="SpaceBench mark on a dot matrix"');
-    for (var r = 0; r < n; r++) for (var q = 0; q < n; q++) {
-      var px = (q + 0.5) * g.canvas / n - cx, py = (r + 0.5) * g.canvas / n - cx;
-      var ux = cx + px * Math.cos(-deg) - py * Math.sin(-deg), uy = cx + px * Math.sin(-deg) + py * Math.cos(-deg);
-      var lit = inside([ux, uy], g.bar) || inside([ux, uy], g.arrow);
-      s += lit ? '<circle cx="' + f((q + 0.5) * p) + '" cy="' + f((r + 0.5) * p) + '" r="' + f(rad) + '" fill="' + c.accent + '"/>'
-        : '<circle cx="' + f((q + 0.5) * p) + '" cy="' + f((r + 0.5) * p) + '" r="' + f(rad - 0.5) + '" stroke="' + c.line + '"/>';
-    }
-    return s + '</svg>';
-  }
-
-  /* Limb: the planet's edge as a particle field. Dense at the edge, thinning inward. */
-  function limbPoints(o) {
-    o = o || {};
-    var W = o.width || 1200, H = o.height || 600, n = o.count || 2600, r = rng(o.seed == null ? 1 : o.seed);
-    var R = o.radius || W * 1.15, cx = o.cx == null ? W / 2 : o.cx, top = o.top == null ? H * 0.38 : o.top, cy = top + R;
-    var span = Math.asin(Math.min(0.99, (W * 0.62) / R)), lam = H * 0.11, pts = [];
-    for (var i = 0; i < n; i++) {
-      var th = (r() * 2 - 1) * span, u = r(), d, a, rad;
-      if (u < 0.16) { d = r() * 2.5; a = 1; rad = 1.1 + r() * 0.7; }
-      else if (u < 0.2) { d = -(-Math.log(1 - r()) * 7); a = 0.45; rad = 0.7; }
-      else { d = -Math.log(1 - r()) * lam; a = clamp(1 - d / (lam * 3.4), 0.06, 1); rad = 0.5 + 1.1 * a * r(); }
-      var x = cx + (R - d) * Math.sin(th), y = cy - (R - d) * Math.cos(th);
-      if (x < -4 || x > W + 4 || y > H + 4 || y < -4) continue;
-      pts.push([x, y, rad, a]);
-    }
-    return pts;
-  }
-  function limb(o) {
-    o = o || {};
-    var W = o.width || 1200, H = o.height || 600, c = colors(o), s = open(W, H, 'role="img" aria-label="Planet limb"') + '<g fill="' + c.fg + '">';
-    limbPoints(o).forEach(function (p) { s += '<circle cx="' + f(p[0]) + '" cy="' + f(p[1]) + '" r="' + f(p[2]) + '" opacity="' + f(p[3]) + '"/>'; });
-    return s + '</g></svg>';
-  }
-
   /* Range scale: a log ruler from 400 m to contact. Holds are the long ticks. */
   function rangeScale(o) {
     o = o || {};
-    var W = o.width || 640, H = 54, c = colors(o), x0 = 8, x1 = W - 8, s = open(W, H, 'role="img" aria-label="Range scale"');
+    var W = o.width || 640, H = 54, c = colors(o), x0 = 14, x1 = W - 8, s = open(W, H, 'role="img" aria-label="Range scale"');
     [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 200, 300, 400].forEach(function (v) {
       var x = xScale(v, x0, x1), major = HOLDS.indexOf(v) >= 0;
       s += '<line x1="' + f(x) + '" y1="' + (major ? 8 : 20) + '" x2="' + f(x) + '" y2="34" stroke="' + (major ? c.fg : c.muted) + '"/>';
-      if (major || v === 400 || v === 100 || v === 1) s += label(x, 48, String(v), c, { anchor: 'middle', fill: major ? c.fg : c.muted });
+      if (major || v === 400 || v === 100) s += label(x, 48, String(v), c, { anchor: 'middle', fill: major ? c.fg : c.muted });
     });
     s += '<line x1="' + x1 + '" y1="8" x2="' + x1 + '" y2="34" stroke="' + c.fg + '" stroke-width="2"/>' + label(x1, 48, '0', c, { anchor: 'end', fill: c.fg });
     if (o.value != null) {
       var vx = xScale(o.value, x0, x1);
       s += '<path d="M' + f(vx - 5) + ' 0H' + f(vx + 5) + 'L' + f(vx) + ' 8Z" fill="' + c.accent + '"/><line x1="' + f(vx) + '" y1="8" x2="' + f(vx) + '" y2="34" stroke="' + c.accent + '" stroke-width="1.5"/>';
     }
+    return s + '</svg>';
+  }
+
+  /* Lidar noise at 10 m range, as an ellipse: about 34 mm along the line of sight (drawn across) and 6 mm sideways.
+     Figures from DESIGN.md 4.4 (Madonna et al., Aerospace 2025, a simulation study). scale: px per mm. */
+  function lidarNoise(o) {
+    o = o || {};
+    var W = o.width || 640, k = o.scale || 5, c = colors(o), rx = 34 * k, ry = 6 * k, H = 2 * ry + 96, cx = W / 2, cy = ry + 30;
+    var s = open(W, H, 'role="img" aria-label="Lidar noise at 10 m: 34 mm along the line of sight, 6 mm sideways"');
+    s += '<path d="M' + f(cx - rx) + ' ' + cy + 'H' + f(cx + rx) + 'M' + cx + ' ' + f(cy - ry) + 'V' + f(cy + ry) + '" stroke="' + c.muted + '" stroke-width=".45" stroke-dasharray="16 4 2 4"/>';
+    s += '<ellipse cx="' + cx + '" cy="' + cy + '" rx="' + rx + '" ry="' + ry + '" stroke="' + c.fg + '" stroke-width="1.25"/><circle cx="' + cx + '" cy="' + cy + '" r="4" fill="' + c.accent + '"/>';
+    var yd = cy + ry + 22, xd = cx - rx - 22;
+    s += '<path d="M' + cx + ' ' + yd + 'H' + f(cx + rx) + 'M' + cx + ' ' + (yd - 5) + 'v10M' + f(cx + rx) + ' ' + (yd - 5) + 'v10M' + xd + ' ' + f(cy - ry) + 'V' + cy + 'M' + (xd - 5) + ' ' + f(cy - ry) + 'h10M' + (xd - 5) + ' ' + cy + 'h10" stroke="' + c.fg + '" stroke-width=".35"/>';
+    s += label(cx + rx / 2, yd + 22, '34 MM', c, { anchor: 'middle', fill: c.fg }) + label(xd - 14, cy - ry / 2 + 4, '6 MM', c, { anchor: 'end', fill: c.fg });
     return s + '</svg>';
   }
 
@@ -325,7 +162,7 @@
   /* Error dial: a pointer against a tolerance band. value and limit share one unit. */
   function dial(o) {
     o = o || {};
-    var S = o.size || 200, c = colors(o), m = S / 2, R = S * 0.42, lim = o.limit == null ? 4 : o.limit, full = o.full || lim * 3, v = o.value || 0;
+    var S = o.size || 200, c = colors(o), m = S / 2, R = S * 0.42, lim = o.limit == null ? 4 : o.limit, full = o.full || lim * 3, v = o.value;
     var ang = function (x) { return (clamp(x / full, -1, 1) * 135 - 90) * Math.PI / 180; };
     var s = open(S, S, 'role="img" aria-label="Error dial"');
     for (var i = 0; i <= 54; i++) {
@@ -334,6 +171,7 @@
     }
     var a0 = ang(-lim), a1 = ang(lim), Rb = R + 7;
     s += '<path d="M' + f(m + Rb * Math.cos(a0)) + ' ' + f(m + Rb * Math.sin(a0)) + 'A' + f(Rb) + ' ' + f(Rb) + ' 0 0 1 ' + f(m + Rb * Math.cos(a1)) + ' ' + f(m + Rb * Math.sin(a1)) + '" stroke="' + c.accent + '" stroke-width="3"/>';
+    if (v == null) return s + '<circle cx="' + m + '" cy="' + m + '" r="4" fill="' + c.fg + '"/></svg>';
     var av = ang(v);
     s += '<line x1="' + m + '" y1="' + m + '" x2="' + f(m + (R - 16) * Math.cos(av)) + '" y2="' + f(m + (R - 16) * Math.sin(av)) + '" stroke="' + c.fg + '" stroke-width="2"/><circle cx="' + m + '" cy="' + m + '" r="4" fill="' + c.fg + '"/>';
     return s + '</svg>';
@@ -355,51 +193,92 @@
     s += '<line x1="4" y1="8" x2="' + (W - 4) + '" y2="8" stroke="' + c.line + '"/>';
     s += '<rect x="4" y="5" width="' + f(x(w.p) - 4) + '" height="6" fill="' + (o.accent ? c.accent : c.fg) + '"/>';
     s += '<line x1="' + f(x(w.lo)) + '" y1="8" x2="' + f(x(w.hi)) + '" y2="8" stroke="' + c.fg + '"/>';
-    s += '<circle cx="' + f(x(w.lo)) + '" cy="8" r="2.2" fill="var(--sb-surface, #FAFAF8)" stroke="' + c.fg + '"/><circle cx="' + f(x(w.hi)) + '" cy="8" r="2.2" fill="var(--sb-surface, #FAFAF8)" stroke="' + c.fg + '"/>';
+    s += '<circle cx="' + f(x(w.lo)) + '" cy="8" r="2.2" fill="var(--sb-surface, #F6F7F9)" stroke="' + c.fg + '"/><circle cx="' + f(x(w.hi)) + '" cy="8" r="2.2" fill="var(--sb-surface, #F6F7F9)" stroke="' + c.fg + '"/>';
     return s + '</svg>';
   }
 
-  /* Thruster set seen along the approach axis: n dots on a ring. stuck fires continuously
-     (accent, with a plume line); failed is a ring. Count follows the public figure of 16. */
+  /* Thruster set, seen along the capsule's long axis. The layout is the simulation core's own table
+     (crates/core, PLACEHOLDER_THRUSTERS): four pods at a radius of 2 m, four thrusters each. It is a
+     placeholder and not Dragon's layout; say so wherever this is shown. Index = pod * 4 + k.
+     In each pod, k 0 and 1 push along the long axis (drawn on the radius), k 2 and 3 push across it.
+     stuck: fires continuously (accent, with its exhaust line). failed: a ring. pair: accent, no exhaust. */
+  var PODS = [[2, 0], [-2, 0], [0, 2], [0, -2]];            /* y, z in metres */
   function thrusters(o) {
     o = o || {};
-    var S = o.size || 320, c = colors(o), m = S / 2, n = o.count || 16, R = S * 0.36, stuck = o.stuck || [], failed = o.failed || [];
-    var s = open(S, S, 'role="img" aria-label="Thruster set"');
-    s += '<circle cx="' + m + '" cy="' + m + '" r="' + f(R) + '" stroke="' + c.line + '"/><circle cx="' + m + '" cy="' + m + '" r="' + f(R * 0.56) + '" stroke="' + c.line + '" stroke-dasharray="3 4"/>';
-    s += '<line x1="' + f(m - 9) + '" y1="' + m + '" x2="' + f(m + 9) + '" y2="' + m + '" stroke="' + c.fg + '"/><line x1="' + m + '" y1="' + f(m - 9) + '" x2="' + m + '" y2="' + f(m + 9) + '" stroke="' + c.fg + '"/>';
-    for (var i = 0; i < n; i++) {
-      var a = (i / n) * 2 * Math.PI - Math.PI / 2 + Math.PI / n, x = m + R * Math.cos(a), y = m + R * Math.sin(a), r = S * 0.024;
-      if (stuck.indexOf(i) >= 0) {
-        s += '<line x1="' + f(x) + '" y1="' + f(y) + '" x2="' + f(m + (R + S * 0.11) * Math.cos(a)) + '" y2="' + f(m + (R + S * 0.11) * Math.sin(a)) + '" stroke="' + c.accent + '" stroke-width="2"/>';
-        s += '<circle cx="' + f(x) + '" cy="' + f(y) + '" r="' + f(r * 1.25) + '" fill="' + c.accent + '"/>';
-      } else if (failed.indexOf(i) >= 0) {
-        s += '<circle cx="' + f(x) + '" cy="' + f(y) + '" r="' + f(r) + '" fill="var(--sb-bg, #F3F3F1)" stroke="' + c.muted + '" stroke-width="1.2"/>';
-      } else s += '<circle cx="' + f(x) + '" cy="' + f(y) + '" r="' + f(r) + '" fill="' + c.fg + '"/>';
+    var S = o.size || 320, c = colors(o), m = S / 2, R = S * 0.33, r = S * 0.022, d = S * 0.062, stuck = o.stuck || [], failed = o.failed || [], pair = o.pair || [];
+    var s = open(S, S, 'role="img" aria-label="Thruster set, placeholder layout"');
+    s += '<circle cx="' + m + '" cy="' + m + '" r="' + f(R) + '" stroke="' + c.line + '"/>';
+    s += '<path d="M' + f(m - S * 0.47) + ' ' + m + 'H' + f(m + S * 0.47) + 'M' + m + ' ' + f(m - S * 0.47) + 'V' + f(m + S * 0.47) + '" stroke="' + c.muted + '" stroke-width=".45" stroke-dasharray="16 4 2 4"/>';
+    PODS.forEach(function (p, pi) {
+      var ux = p[0] / 2, uy = -p[1] / 2, tx = -uy, ty = ux, px = m + ux * R, py = m + uy * R;   /* u: outward on screen, t: across */
+      [[-d, 0], [d, 0], [0, d], [0, -d]].forEach(function (q, k) {
+        var i = pi * 4 + k, x = px + ux * q[0] + tx * q[1], y = py + uy * q[0] + ty * q[1];
+        if (stuck.indexOf(i) >= 0) {
+          var ex = k < 2 ? ux : (k === 2 ? -tx : tx), ey = k < 2 ? uy : (k === 2 ? -ty : ty);
+          s += '<line x1="' + f(x) + '" y1="' + f(y) + '" x2="' + f(x + ex * S * 0.1) + '" y2="' + f(y + ey * S * 0.1) + '" stroke="' + c.accent + '" stroke-width="2"/><circle cx="' + f(x) + '" cy="' + f(y) + '" r="' + f(r * 1.25) + '" fill="' + c.accent + '"/>';
+        } else if (failed.indexOf(i) >= 0) s += '<circle cx="' + f(x) + '" cy="' + f(y) + '" r="' + f(r) + '" stroke="' + c.muted + '" stroke-width="1.25"/>';
+        else s += '<circle cx="' + f(x) + '" cy="' + f(y) + '" r="' + f(pair.indexOf(i) >= 0 ? r * 1.25 : r) + '" fill="' + (pair.indexOf(i) >= 0 ? c.accent : c.fg) + '"/>';
+      });
+    });
+    return s + '</svg>';
+  }
+
+  /* Contact figure: the seven contact limits as seven spokes, each scaled so that its limit lies on one circle.
+     The shaded sector is the closing-speed floor (0.05 of 0.10 m/s = half the radius).
+     values: seven numbers as a share of each limit, in LIMITS order starting at the top and going clockwise:
+     closing, sideways speed, pitch and yaw rate, roll rate, roll angle, pitch and yaw angle, sideways offset.
+     Leave values out until a flight exists: the figure is then drawn empty. */
+  function contactFigure(o) {
+    o = o || {};
+    var S = o.size || 64, c = colors(o), m = S / 2, R = S * 0.36, big = S >= 60;
+    var pt = function (k, i) { var a = (-90 + i * 360 / 7) * Math.PI / 180; return [m + R * k * Math.cos(a), m + R * k * Math.sin(a)]; };
+    var a0 = pt(0.5, -0.5), a1 = pt(0.5, 0.5), s = open(S, S, 'role="img" aria-label="Contact figure' + (o.values ? '' : ', empty') + '"');
+    s += '<path d="M' + m + ' ' + m + 'L' + f(a0[0]) + ' ' + f(a0[1]) + 'A' + f(R / 2) + ' ' + f(R / 2) + ' 0 0 1 ' + f(a1[0]) + ' ' + f(a1[1]) + 'Z" fill="' + c.accent + '" fill-opacity=".55"/>';
+    for (var i = 0; i < 7; i++) { var e = pt(1.24, i); s += '<line x1="' + m + '" y1="' + m + '" x2="' + f(e[0]) + '" y2="' + f(e[1]) + '" stroke="' + c.fg + '" stroke-width="' + (big ? 0.8 : 0.7) + '"/>'; }
+    s += '<circle cx="' + m + '" cy="' + m + '" r="' + f(R) + '" stroke="' + c.accent + '" stroke-width="' + (big ? 2 : 1.6) + '"/>';
+    if (o.values) s += '<path d="M' + o.values.map(function (v, i) { var q = pt(clamp(v, 0, 1.4), i); return f(q[0]) + ' ' + f(q[1]); }).join('L') + 'Z" stroke="' + c.fg + '" stroke-width="' + (big ? 1.6 : 1.25) + '" stroke-linejoin="round"/>';
+    return s + '</svg>';
+  }
+
+  /* Seed field: one leaderboard row is 6 tiers by 30 hidden seeds. outcomes: optional 6 arrays of 30 entries,
+     each 'pass', 'hold' (failed, reached a hold point), 'abort', or null for not flown. Left out, every seed is not flown. */
+  function seedField(o) {
+    o = o || {};
+    var c = colors(o), px = o.pitch || 22, py = px + 2, rr = px * 0.3, W = 30 * px, H = 6 * py, s = open(W, H, 'role="img" aria-label="Seed field, 6 tiers by 30 seeds"');
+    for (var t = 0; t < 6; t++) for (var k = 0; k < 30; k++) {
+      var x = k * px + px / 2, y = t * py + py / 2, v = o.outcomes && o.outcomes[t] ? o.outcomes[t][k] : null;
+      if (v === 'pass') s += '<circle cx="' + f(x) + '" cy="' + f(y) + '" r="' + f(rr * 1.15) + '" fill="' + c.accent + '"/>';
+      else if (v === 'abort') s += '<path d="M' + f(x - rr * 0.85) + ' ' + f(y - rr * 0.85) + 'l' + f(rr * 1.7) + ' ' + f(rr * 1.7) + 'm0 ' + f(-rr * 1.7) + 'l' + f(-rr * 1.7) + ' ' + f(rr * 1.7) + '" stroke="' + c.fg + '" stroke-width="1.6"/>';
+      else {
+        s += '<circle cx="' + f(x) + '" cy="' + f(y) + '" r="' + f(rr) + '" stroke="' + (v === 'hold' ? c.muted : c.fg) + '"/>';
+        if (v === 'hold') s += '<path d="M' + f(x) + ' ' + f(y - rr) + 'A' + f(rr) + ' ' + f(rr) + ' 0 0 1 ' + f(x + rr * 0.866) + ' ' + f(y + rr * 0.5) + '" stroke="' + c.fg + '" stroke-width="2.6"/>';
+      }
     }
     return s + '</svg>';
   }
 
-  /* SPECIMEN leaderboard rows from a seeded generator. Entries are named "Model A" on purpose. */
-  function specimenBoard(seed) {
-    var r = rng(seed == null ? 20261115 : seed);
-    return [['Model A', 'high', 24], ['Model A', 'low', 17], ['Model B', 'high', 21], ['Model C', 'medium', 12],
-      ['PID controller', 'baseline', 29], ['Model D', 'high', 6], ['Random policy', 'baseline', 0]].map(function (x) {
-      var turns = Math.round(110 + r() * 180), base = x[1] === 'baseline';
-      return { name: x[0], level: x[1], k: x[2], n: 30, score: Math.round(18 + x[2] / 30 * 70 + r() * 8), turns: turns,
-        tokens: base ? null : Math.round(turns * (2.2 + r() * 6)) / 10, cost: base ? null : 4 + r() * 60, think: base ? null : 2 + r() * 40 };
-    }).sort(function (a, b) { return b.k - a.k; });
+  /* The rows a board will hold at launch, before anything has flown. Baselines come from DESIGN.md 4.3.
+     Model rows carry no names: the launch lineup is not fixed. k is null until a row has flown. */
+  function emptyBoard() {
+    return [['Random policy', 'baseline'], ['PID controller', 'baseline'], ['LQR controller', 'baseline'], ['Human pilots', 'matched board'],
+      ['Model', 'reasoning level'], ['Model', 'reasoning level'], ['Model', 'reasoning level'], ['Model', 'reasoning level']].map(function (x) {
+      return { name: x[0], level: x[1], k: null, n: 30 };
+    });
   }
+  /* rows: {name, level, k, n, score, turns, tokens, cost, think}. A row with k == null has not flown and shows no numbers. */
   function boardTable(rows, o) {
     o = o || {};
-    var focus = o.focus == null ? 1 : o.focus;
-    return '<thead><tr><th>#</th><th>Entry</th><th class="num">Passed</th><th>Success</th><th>95% interval</th><th class="num">Score</th><th class="num">Turns</th><th class="num">Tokens, k</th><th class="num">Cost / episode</th><th class="num">Think / step</th></tr></thead><tbody>' +
+    var focus = o.focus == null ? -1 : o.focus, c = colors(o), bw = o.barWidth || 200;
+    var dash = '<td class="num sb-dim">–</td>';
+    return '<thead><tr><th>#</th><th>Entry</th><th class="num">Docked</th><th>Success</th><th>95% interval</th><th class="num">Score</th><th class="num">Turns</th><th class="num">Tokens, k</th><th class="num">Cost / episode</th><th class="num">Think / step</th></tr></thead><tbody>' +
       rows.map(function (x, i) {
+        var head = '<tr' + (i === focus ? ' data-focus' : '') + '><td class="rank">' + (x.k == null ? '–' : String(i + 1).padStart(2, '0')) + '</td><td class="name"><b>' + x.name + '</b><span>' + x.level + '</span></td>';
+        if (x.k == null) return head + '<td class="num sb-dim">– of ' + x.n + '</td><td class="rate sb-dim">–</td><td>' + open(bw, 16) + '<line x1="4" y1="8" x2="' + (bw - 4) + '" y2="8" stroke="' + c.line + '"/></svg></td>' + dash + dash + dash + dash + dash + '</tr>';
         var w = wilson(x.k, x.n);
-        return '<tr' + (i === focus ? ' data-focus' : '') + '><td class="rank">' + String(i + 1).padStart(2, '0') + '</td><td class="name"><b>' + x.name + '</b><span>' + x.level + '</span></td><td class="num">' + x.k + ' of ' + x.n + '</td><td class="rate">' + Math.round(w.p * 100) + '%</td><td>' + rateBar(x.k, x.n, { width: o.barWidth || 200, accent: i === focus }) +
+        return head + '<td class="num">' + x.k + ' of ' + x.n + '</td><td class="rate">' + Math.round(w.p * 100) + '%</td><td>' + rateBar(x.k, x.n, { width: bw, accent: i === focus }) +
           '</td><td class="num">' + x.score + '</td><td class="num">' + x.turns + '</td><td class="num">' + (x.tokens == null ? '–' : x.tokens.toFixed(1)) + '</td><td class="num">' + (x.cost == null ? '–' : '$' + x.cost.toFixed(2)) + '</td><td class="num">' + (x.think == null ? '–' : x.think.toFixed(1) + ' s') + '</td></tr>';
       }).join('') + '</tbody>';
   }
-
   /* Pictograms on a 24 grid, 1.5 stroke, round caps. */
   var ICONS = {
     tx: '<path d="M3 12h18M7 8l-4 4 4 4M17 8l4 4-4 4"/>',
@@ -433,30 +312,26 @@
 
   var api = {
     HOLDS: HOLDS, KEEP_OUT: KEEP_OUT, START: START, LIMITS: LIMITS, TIERS: TIERS, AXES: AXES, ICONS: ICONS,
-    rng: rng, wilson: wilson, specimenFlight: specimenFlight,
-    flightSignature: flightSignature, approachArcs: approachArcs, approachChart: approachChart, orbit: orbit,
-    dockingRing: dockingRing, dotMark: dotMark, limb: limb, limbPoints: limbPoints, rangeScale: rangeScale,
-    tierDots: tierDots, dial: dial, rateBar: rateBar, icon: icon, thrusters: thrusters,
-    specimenBoard: specimenBoard, boardTable: boardTable,
-    /* <div data-sb="signature" data-seed="421" data-tier="3" data-opts='{"height":80}'></div> */
+    wilson: wilson, approachArcs: approachArcs, orbit: orbit, dockingRing: dockingRing, rangeScale: rangeScale,
+    lidarNoise: lidarNoise, tierDots: tierDots, dial: dial, rateBar: rateBar, icon: icon, thrusters: thrusters,
+    contactFigure: contactFigure, seedField: seedField, emptyBoard: emptyBoard, boardTable: boardTable,
+    /* <div data-sb="arcs" data-opts='{"height":330}'></div> */
     mount: function (scope) {
       (scope || document).querySelectorAll('[data-sb]').forEach(function (el) {
         var kind = el.getAttribute('data-sb'), o = {};
         try { o = JSON.parse(el.getAttribute('data-opts') || '{}'); } catch (e) { o = {}; }
-        var seed = +(el.getAttribute('data-seed') || 421), tier = +(el.getAttribute('data-tier') || 3);
         var out = '';
-        if (kind === 'signature') out = flightSignature(specimenFlight(seed, tier), o);
-        else if (kind === 'chart') out = approachChart(specimenFlight(seed, tier), o);
-        else if (kind === 'arcs') out = approachArcs(o);
+        if (kind === 'arcs') out = approachArcs(o);
         else if (kind === 'orbit') out = orbit(o);
         else if (kind === 'ring') out = dockingRing(o);
-        else if (kind === 'dotmark') out = dotMark(el.getAttribute('data-sim') || 'parent', o);
-        else if (kind === 'limb') out = limb(Object.assign({ seed: seed }, o));
         else if (kind === 'scale') out = rangeScale(o);
-        else if (kind === 'tier') out = tierDots(tier, o);
+        else if (kind === 'noise') out = lidarNoise(o);
+        else if (kind === 'tier') out = tierDots(+(el.getAttribute('data-tier') || 3), o);
         else if (kind === 'dial') out = dial(o);
         else if (kind === 'rate') out = rateBar(o.k || 0, o.n || 30, o);
         else if (kind === 'thrusters') out = thrusters(o);
+        else if (kind === 'contact') out = contactFigure(o);
+        else if (kind === 'seeds') out = seedField(o);
         else if (kind === 'icon') out = icon(el.getAttribute('data-name'), o);
         el.innerHTML = out;
       });

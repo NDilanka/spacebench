@@ -1,67 +1,68 @@
-/* Fixed-size artboards for exports. Each template sets its own size on <body>. */
+/* Fixed-size artboards for exports. Each template sets its own size on <body>.
+   Two families. Flat pieces (tier poster, leaderboard) carry data and sit on a flat ground.
+   Identity pieces (.t-plume: avatar, banner, share card) sit on the plume field and carry no data. */
 html,body{margin:0;padding:0}
 body.t{position:relative;overflow:hidden;display:flex;flex-direction:column;padding:44px 48px}
 .t [data-sb]>svg{display:block;width:100%;height:auto}
 .t .grow{flex:1;min-height:0}
 .t .sb-meta{font-size:13px}
-.t .cap{font:var(--sb-type-label);letter-spacing:var(--sb-track-label);text-transform:uppercase;color:var(--sb-fg-2);font-size:12px}
-.t .sb-specimen{font-size:11px;height:26px}
-
-/* share card 1200 x 630 */
-.t-og{width:1200px;height:630px}
-.t-og .main{display:grid;grid-template-columns:1.08fr 1fr;gap:40px;align-items:center}
-.t-og .lk .sb-logo{height:34px}
-.t-og h1{font:600 78px/.94 var(--sb-font-sans);letter-spacing:-.055em;margin:26px 0 20px}
-.t-og p{font:400 21px/1.35 var(--sb-font-sans);letter-spacing:-.015em;color:var(--sb-fg-2);margin:0;max-width:26em}
-.t-og .foot{display:grid;grid-template-columns:1fr auto;gap:32px;align-items:end}
-.t-og .limb{position:absolute;left:0;right:0;bottom:0}
-.t-og .fig{position:relative}
-.t-og .fig.dot{width:300px;justify-self:end;margin-right:30px}
-
-/* banner 1500 x 500 */
-.t-banner{width:1500px;height:500px;padding:40px 56px}
-.t-banner .limb{position:absolute;left:0;right:0;bottom:0}
-.t-banner .lk .sb-logo{height:56px}
-.t-banner .mid{position:relative;display:flex;flex-direction:column;justify-content:center;gap:22px}
-.t-banner h1{font:600 54px/1 var(--sb-font-sans);letter-spacing:-.05em;margin:0}
+.t .cap{font:var(--sb-type-label);letter-spacing:var(--sb-track-label);text-transform:uppercase;color:var(--sb-fg-2);font-size:12px;margin:0}
+.t .sb-specimen{height:26px}
 
 /* tier poster 1080 x 1350 */
 .t-tier{width:1080px;height:1350px;padding:52px 56px}
 .t-tier .idx{display:flex;justify-content:space-between;align-items:flex-start;margin-top:44px}
-.t-tier .idx b{font:600 200px/.82 var(--sb-font-sans);letter-spacing:-.07em;color:var(--sb-fg)}
-.t-tier .idx b i{font-style:normal;color:var(--sb-fg-3)}
+.t-tier .idx b{font:var(--sb-type-readout-xl);font-size:168px;color:var(--sb-fg)}
 .t-tier .idx .dots{width:210px;margin-top:10px}
-.t-tier h1{font:600 84px/.95 var(--sb-font-sans);letter-spacing:-.055em;margin:36px 0 0;max-width:10.5em}
-.t-tier .fig{display:grid;place-items:center}
+.t-tier h1{font:700 84px/.95 var(--sb-font-sans);letter-spacing:-.055em;margin:36px 0 0}
+.t-tier .fig{display:flex;flex-direction:column;justify-content:center;align-items:center;gap:26px}
 .t-tier .fig>div{width:100%}
-.t-tier .fig.sq>div{width:440px}
-.t-tier .foot{display:grid;grid-template-columns:1fr 1fr;gap:48px;align-items:end}
+.t-tier .fig.sq>div{width:480px}
+.t-tier .fig p{margin:0;max-width:38em;text-align:center;font:400 18px/1.45 var(--sb-font-sans);letter-spacing:-.008em;color:var(--sb-fg-2);text-wrap:balance}
+.t-tier .axes{display:grid;grid-template-columns:repeat(6,1fr);border:1px solid var(--sb-line)}
+.t-tier .axes>div{padding:34px 0 22px;display:grid;justify-items:center;gap:22px;border-left:1px solid var(--sb-line)}
+.t-tier .axes>div:first-child{border-left:0}
+.t-tier .axes>.rot{color:var(--sb-accent)}
+.t-tier .axes .cap{color:var(--sb-fg)}
+.t-tier .foot{display:grid;grid-template-columns:1fr 1fr;gap:48px;align-items:end;margin-top:28px}
+.t-tier .foot .sign{display:grid;gap:18px;justify-items:end}
 .t-tier .foot .lk .sb-logo{height:30px}
 .t-tier .sb-spec{font-size:15px}
-
-/* flight sheet 1200 x 1500 */
-.t-flight{width:1200px;height:1500px;padding:52px 56px;gap:0}
-.t-flight .title{display:grid;grid-template-columns:220px 1fr auto;gap:28px;align-items:end;margin:56px 0 36px}
-.t-flight .title .n{font:600 120px/.82 var(--sb-font-sans);letter-spacing:-.07em;color:var(--sb-fg-3)}
-.t-flight h1{font:600 60px/.96 var(--sb-font-sans);letter-spacing:-.05em;margin:0}
-.t-flight .result{display:grid;gap:10px;justify-items:end}
-.t-flight .result b{font:var(--sb-type-readout);font-size:64px;font-weight:400}
-.t-flight .figure{padding:26px 28px 18px;display:grid;gap:14px}
-.t-flight .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--sb-line);border:1px solid var(--sb-line);margin:28px 0}
-.t-flight .stats>div{background:var(--sb-bg);padding:14px 16px 16px;display:grid;gap:12px}
-.t-flight .stats b{font:var(--sb-type-readout);font-size:38px;font-weight:400;white-space:nowrap}
-.t-flight .sb-spec{font-size:15px}
-.t-flight .sb-spec td.st{width:120px;text-align:right}
-.t-flight .foot{display:grid;gap:14px}
-.t-flight .foot .row{display:flex;justify-content:space-between;align-items:center}
+.t-tier .sb-spec td{text-align:right;color:var(--sb-fg)}
 
 /* leaderboard 1600 x 1000 */
 .t-board{width:1600px;height:1000px;padding:48px 56px}
-.t-board .title{display:grid;grid-template-columns:1fr auto;align-items:end;margin:44px 0 34px}
-.t-board h1{font:600 68px/.95 var(--sb-font-sans);letter-spacing:-.055em;margin:0}
+.t-board .title{display:grid;grid-template-columns:1fr auto;align-items:end;margin:40px 0 34px}
+.t-board h1{font:700 68px/.95 var(--sb-font-sans);letter-spacing:-.055em;margin:0}
 .t-board .sb-board{font-size:17px}
 .t-board .sb-board th{font-size:11.5px;padding-bottom:14px}
 .t-board .sb-board td{padding-top:17px;padding-bottom:17px}
 .t-board .sb-board .rate{font-size:28px}
 .t-board .foot{display:flex;justify-content:space-between;align-items:center}
 .t-board .foot .lk .sb-logo{height:30px}
+
+/* ---------- identity pieces on the plume field ---------- */
+/* Texture is the ground for identity pieces only. No shadow, no bevel.
+   On the field the wordmark's second tone steps up one grey, or it sinks into the texture. */
+.t-plume .sb-logo--parent .sb-logo__b{fill:var(--sb-fg-2)}
+body.t-plume{padding:0;display:block}
+.t-plume .ground{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.t-plume #art svg{display:block}
+.t-avatar{width:800px;height:800px}
+.t-xbanner{width:1500px;height:500px}
+.t-xbanner .txt{position:absolute;right:96px;top:0;bottom:0;width:500px;display:flex;flex-direction:column;justify-content:center;gap:24px}
+.t-xbanner .txt .sb-logo{height:58px}
+.t-xbanner .txt p{margin:0;font:500 23px/1.32 var(--sb-font-sans);letter-spacing:-.012em;color:var(--sb-fg);text-wrap:balance}
+.t-xbanner .txt .by{display:grid;gap:12px;margin-top:6px;font:500 12px/1 var(--sb-font-mono);letter-spacing:.09em;text-transform:uppercase;color:var(--sb-fg)}
+.t-xbanner .txt .by[hidden]{display:none}
+.t-xbanner .txt .by div{display:flex;align-items:center;gap:34px}
+.t-xbanner .txt .by img{display:block;width:auto}
+
+/* share card 1200 x 630 */
+.t-og{width:1200px;height:630px}
+.t-og .plate{position:absolute;left:84px;top:147px;width:336px;height:336px}
+.t-og .txt{position:absolute;left:500px;right:72px;top:0;bottom:24px;display:flex;flex-direction:column;justify-content:center}
+.t-og .txt .sb-logo{height:42px}
+.t-og h1{font:700 76px/.96 var(--sb-font-sans);letter-spacing:-.05em;margin:30px 0 22px;color:var(--sb-fg)}
+.t-og p{font:500 22px/1.36 var(--sb-font-sans);letter-spacing:-.012em;color:var(--sb-fg);margin:0;max-width:25em;text-wrap:balance}
+.t-og .meta{position:absolute;left:500px;bottom:48px;font:500 12px/1 var(--sb-font-mono);letter-spacing:.09em;text-transform:uppercase;color:var(--sb-fg)}

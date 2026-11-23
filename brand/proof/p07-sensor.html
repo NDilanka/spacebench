@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><title>Proof 07. The sensor's view</title>
+<link rel="stylesheet" href="proof.css">
+<style>
+.sheet { width: 1600px; height: 1040px; }
+h1 { position: absolute; left: 40px; top: 84px; font: 700 76px/0.94 var(--sans); letter-spacing: -.05em; }
+h1 span { color: var(--on-ink-3); }
+.lead { position: absolute; right: 40px; top: 96px; width: 420px; font: 400 16px/1.45 var(--sans); color: var(--on-ink-2); }
+.pan { position: absolute; top: 268px; width: 494px; height: 660px; border-top: 1px solid var(--on-ink); }
+.pan canvas { position: absolute; left: 0; top: 96px; width: 494px; height: 564px; }
+.pan .n { position: absolute; left: 0; top: 16px; }
+.pan .m { position: absolute; right: 0; top: 16px; text-align: right; line-height: 1.7; }
+.foot { position: absolute; left: 40px; right: 40px; bottom: 28px; display: flex; justify-content: space-between; align-items: flex-end; }
+</style></head>
+<body><div class="sheet ink" id="sheet">
+  <div class="hdr mono"><span>SpaceBench Dock</span><span class="dim">Proof No. 07 · The sensor's view</span><span class="dim">07/09</span><span class="dim">Three holds</span></div>
+  <h1>Sharp where measured.<br><span>Soft where not.</span></h1>
+  <p class="lead">On the headline track the pilot never sees the station. It reads what the sensors return. Every dot here is one ray that came back, so the picture fills in as the range closes.</p>
+  <div class="pan" style="left:40px"><div class="n" id="n0"></div><div class="m mono s dim" id="m0"></div><canvas id="c0"></canvas></div>
+  <div class="pan" style="left:553px"><div class="n" id="n1"></div><div class="m mono s dim" id="m1"></div><canvas id="c1"></canvas></div>
+  <div class="pan" style="left:1066px"><div class="n" id="n2"></div><div class="m mono s dim" id="m2"></div><canvas id="c2"></canvas></div>
+  <div class="foot"><div class="mono s dim">Schematic sensor: a fixed grid of 124 × 141 rays, 26° wide. Station shape is our own and is not a model of a real vehicle.<br>Sourced noise at 10 m: 6 mm sideways, 34 mm along the line of sight (Madonna et al., Aerospace 2025). Drawn growing in proportion to range, which is our assumption.</div><div class="mono s"><span class="stamp">Illustration · not telemetry</span></div></div>
+  <div class="grain"></div>
+</div>
+<script src="proof.js"></script>
+<script>
+(async function () {
+  await document.fonts.ready;
+  var NX = 124, NY = 141, FOV = 26 * Math.PI / 180, r = SBP.rng(41);
+  function len(a, b, c) { return Math.sqrt(a * a + b * b + c * c); }
+  function box(p, c, h) { var x = Math.abs(p[0] - c[0]) - h[0], y = Math.abs(p[1] - c[1]) - h[1], z = Math.abs(p[2] - c[2]) - h[2]; return len(Math.max(x, 0), Math.max(y, 0), Math.max(z, 0)) + Math.min(Math.max(x, y, z), 0); }
+  function cyl(p, c, ax, rad, hl) { var a = p[ax] - c[ax], i = (ax + 1) % 3, j = (ax + 2) % 3, d = Math.hypot(p[i] - c[i], p[j] - c[j]) - rad, e = Math.abs(a) - hl; return Math.min(Math.max(d, e), 0) + Math.hypot(Math.max(d, 0), Math.max(e, 0)); }
+  /* x = docking axis (the port faces -x, toward the sensor), y = sideways, z = up. Units are metres, schematic. */
+  var parts = [];
+  parts.push(function (p) { return cyl(p, [4.5, 0, 0], 0, 2.2, 4.3); });                    /* node */
+  parts.push(function (p) { return cyl(p, [0.1, 0, 0], 0, 1.05, 0.25); });                  /* adapter */
+  parts.push(function (p) { return cyl(p, [11, 0, 0], 1, 2.1, 17); });                      /* cross module */
+  parts.push(function (p) { return cyl(p, [11, 0, 5], 2, 1.7, 5); });                       /* upper module */
+  parts.push(function (p) { return cyl(p, [20, 0, 0], 0, 2.1, 9); });                       /* aft module */
+  parts.push(function (p) { return box(p, [16, 0, 9], [0.9, 54, 0.9]); });                  /* truss */
+  [-50, -37, 37, 50].forEach(function (y) { [1, -1].forEach(function (sg) { parts.push(function (p) { return box(p, [16, y, 9 + sg * 19], [0.12, 5.2, 16]); }); }); });
+  [-14, 14].forEach(function (y) { parts.push(function (p) { return box(p, [16, y, 1], [0.1, 3.2, 7]); }); });
+  var port = function (p) {                                                                /* capture ring and three petals */
+    var q = Math.hypot(p[1], p[2]) - 0.72, ring = Math.hypot(q, p[0] + 0.28) - 0.085, d = ring;
+    for (var k = 0; k < 3; k++) { var a = k * 2.0944 + 1.5708, c = [-0.52, 0.56 * Math.cos(a), 0.56 * Math.sin(a)], u = (p[1] - c[1]) * -Math.sin(a) + (p[2] - c[2]) * Math.cos(a), v = (p[1] - c[1]) * Math.cos(a) + (p[2] - c[2]) * Math.sin(a) + (p[0] - c[0]) * 0.45;
+      var bx = Math.abs(u) - 0.2, by = Math.abs(v) - 0.03, bz = Math.abs(p[0] - c[0]) - 0.24; d = Math.min(d, len(Math.max(bx, 0), Math.max(by, 0), Math.max(bz, 0)) + Math.min(Math.max(bx, by, bz), 0)); }
+    return d;
+  };
+  function sdf(p) { var d = 1e9, id = 0; for (var i = 0; i < parts.length; i++) { var v = parts[i](p); if (v < d) d = v; } var pv = port(p); if (pv < d) { d = pv; id = 1; } return [d, id]; }
+  function render(cv, range, nid, mid) {
+    var S = 4, W = NX * S * 2, H = NY * S * 2; cv.width = W; cv.height = H;
+    var ctx = cv.getContext('2d'), hits = 0, tan = Math.tan(FOV / 2), pitch = W / NX;
+    var sLat = 0.006 * range / 10, sLos = 0.034 * range / 10, colsOn = '238,240,244';
+    for (var j = 0; j < NY; j++) for (var i = 0; i < NX; i++) {
+      var u = ((i + 0.5) / NX * 2 - 1) * tan, v = (1 - (j + 0.5) / NY * 2) * tan * NY / NX, n = len(1, u, v), dir = [1 / n, u / n, v / n], t = Math.max(0, range - 70), hit = null;
+      for (var k = 0; k < 90; k++) { var p = [-range + dir[0] * t, dir[1] * t, dir[2] * t], s = sdf(p); if (s[0] < 0.004 * Math.max(1, t / 20)) { hit = [p, s[1], t]; break; } t += s[0] * 0.9; if (t > range + 60) break; }
+      var cx = (i + 0.5) * pitch, cy = (j + 0.5) * pitch;
+      if (!hit) { ctx.fillStyle = 'rgba(' + colsOn + ',.07)'; ctx.beginPath(); ctx.arc(cx, cy, pitch * 0.07, 0, 6.283); ctx.fill(); continue; }
+      var e = 0.01 * Math.max(1, hit[2] / 30), P = hit[0], g = [sdf([P[0] + e, P[1], P[2]])[0] - sdf([P[0] - e, P[1], P[2]])[0], sdf([P[0], P[1] + e, P[2]])[0] - sdf([P[0], P[1] - e, P[2]])[0], sdf([P[0], P[1], P[2] + e])[0] - sdf([P[0], P[1], P[2] - e])[0]], gl = len(g[0], g[1], g[2]) || 1;
+      var inc = Math.abs((g[0] * dir[0] + g[1] * dir[1] + g[2] * dir[2]) / gl);          /* return strength falls at grazing angles */
+      if (r() > 0.25 + 0.75 * Math.pow(inc, 0.5) * Math.min(1, 60 / hit[2] + 0.55)) continue;  /* lost returns */
+      var depth = hit[2] + SBP.gauss(r) * sLos, near = SBP.clamp(1 - (depth - range) / 26, 0.25, 1);
+      var rad = pitch * (0.16 + 0.3 * Math.pow(inc, 0.6) * near), jx = SBP.gauss(r) * sLat / (range * 2 * tan / NX) * pitch, jy = SBP.gauss(r) * sLat / (range * 2 * tan / NX) * pitch;
+      ctx.fillStyle = hit[1] ? 'rgb(142,107,255)' : 'rgba(' + colsOn + ',' + (0.35 + 0.65 * near).toFixed(2) + ')';
+      ctx.beginPath(); ctx.arc(cx + jx, cy + jy, hit[1] ? Math.max(rad, pitch * 0.34) : rad, 0, 6.283); ctx.fill(); hits++;
+    }
+    document.getElementById(nid).innerHTML = SBP.dots(range, { pitch: 9, fg: '#EEF0F4' }) + '<div class="mono s dim" style="margin-top:8px">metres</div>';
+    document.getElementById(mid).innerHTML = 'Rays returned <span style="color:#EEF0F4">' + hits.toLocaleString('en-US') + '</span> of ' + (NX * NY).toLocaleString('en-US') + '<br>Noise along the line of sight <span style="color:#EEF0F4">' + (sLos * 1000).toFixed(0) + ' mm</span><br>Noise sideways <span style="color:#EEF0F4">' + (sLat * 1000).toFixed(0) + ' mm</span>';
+  }
+  render(document.getElementById('c0'), 250, 'n0', 'm0');
+  render(document.getElementById('c1'), 30, 'n1', 'm1');
+  render(document.getElementById('c2'), 10, 'n2', 'm2');
+  document.body.dataset.ready = '1';
+})();
+</script>
+</body></html>

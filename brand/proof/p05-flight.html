@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><title>Proof 05. Flight sheet</title>
+<link rel="stylesheet" href="proof.css">
+<style>
+.sheet { width: 1600px; height: 1100px; }
+h1 { position: absolute; left: 40px; top: 84px; font: 700 76px/0.94 var(--sans); letter-spacing: -.05em; z-index: 4; }
+h1 span { color: var(--on-ink-3); } h1 b { font-weight: 700; background: var(--violet); color: #fff; padding: 0 .12em 0 .1em; margin-left: -.1em; }
+#strobe { position: absolute; left: 0; top: 250px; }
+#score { position: absolute; left: 40px; top: 640px; }
+.cap { position: absolute; left: 40px; }
+.read { position: absolute; right: 40px; top: 92px; text-align: right; z-index: 4; }
+.foot { position: absolute; left: 40px; right: 40px; bottom: 28px; display: flex; justify-content: space-between; align-items: flex-end; }
+.spine { position: absolute; right: -8px; top: 620px; transform-origin: right top; transform: rotate(-90deg) translate(0, -100%); font: 800 150px/0.8 var(--sans); letter-spacing: -.05em; color: var(--ink-3); white-space: nowrap; }
+</style></head>
+<body><div class="sheet ink" id="sheet">
+  <div class="hdr mono"><span>SpaceBench Dock · Flight sheet</span><span class="dim">Proof No. 05 · Strobe and score</span><span class="dim">05/09</span><span class="dim" id="br"></span></div>
+  <h1 id="h"></h1>
+  <div class="read"><div class="mono dim" style="margin-bottom:12px">Closing speed at first contact</div><div id="big" style="display:inline-block"></div><div class="mono" style="margin-top:12px">m/s · limit 0.05 to 0.10</div></div>
+  <svg id="strobe" width="1600" height="380" fill="none"></svg>
+  <div class="cap mono s dim" style="top:262px">Strobe · the capsule drawn once per decision, each over the last. Wide gaps are long coasts. Tight stacks are hesitation. Grey = coast only.</div>
+  <div class="cap mono s dim" style="top:622px" id="sc"></div>
+  <svg id="score" width="1520" height="400" fill="none" style="overflow:visible"></svg>
+  <div class="foot"><div class="mono s dim" id="prov"></div><div class="mono s"><span class="stamp">Specimen · not a result</span></div></div>
+  <div class="grain"></div>
+</div>
+<script src="proof.js"></script>
+<script>
+(async function () {
+  await document.fonts.load('700 100px Geist'); await document.fonts.ready;
+  var f = SBP.f, F = SBP.flight(17, 4), $ = function (id) { return document.getElementById(id); };
+  var on = '#EEF0F4', dim = '#6B7387', line = '#283044', vio = '#8E6BFF';
+  function t(x, y, s, o) { o = o || {}; return '<text x="' + f(x) + '" y="' + f(y) + '" font-family="Geist Mono" font-size="' + (o.size || 9.5) + '" font-weight="500" letter-spacing=".8" fill="' + (o.fill || dim) + '" text-anchor="' + (o.anchor || 'start') + '">' + s + '</text>'; }
+  var over = F.contact.closing - 0.10;
+  $('h').innerHTML = over > 0 ? '<span>Flight 0017 arrived</span><br><b>' + over.toFixed(3) + ' m/s</b> too fast.' : '<span>Flight 0017</span><br>made contact.';
+  $('big').innerHTML = SBP.dots(F.contact.closing.toFixed(3), { pitch: 15, fg: on, ghost: 0.25 });
+  $('br').textContent = 'Bracket ' + F.bracket;
+
+  /* ---- strobe ---- */
+  var x0 = 150, x1 = 1496, cy = 205, s = '', lastX = -99;
+  function X(rg) { return x1 - (x1 - x0) * Math.log(1 + rg / 3) / Math.log(1 + 400 / 3); }
+  s += '<path d="M0 ' + cy + 'H1600" stroke="' + line + '" stroke-dasharray="18 4 3 4"/>';
+  [400, 250, 30, 10].forEach(function (r) { s += '<path d="M' + f(X(r)) + ' 60V350" stroke="' + line + '"/>' + t(X(r) + 6, 348, (r === 400 ? 'START ' : 'HOLD ') + r + ' M', { fill: on }); });
+  s += '<path d="M' + f(X(200)) + ' 60V350" stroke="' + dim + '" stroke-dasharray="6 5"/>' + t(X(200) + 6, 72, 'KEEP-OUT 200 M');
+  /* the station port, cut by the edge */
+  var hatch = ''; for (var hx = 1500; hx < 1760; hx += 9) hatch += 'M' + hx + ' 50L' + (hx - 200) + ' 370';
+  s += '<clipPath id="stn"><path d="M1524 50H1700V370H1524ZM1506 ' + (cy - 34) + 'H1524V' + (cy + 34) + 'H1506Z"/></clipPath><path d="' + hatch + '" stroke="' + dim + '" stroke-width="1" clip-path="url(#stn)"/><path d="M1600 50H1524V' + (cy - 34) + 'H1506V' + (cy + 34) + 'H1524V370H1600" stroke="' + on + '" stroke-width="1.5"/><rect x="1496" y="' + (cy - 24) + '" width="10" height="48" stroke="' + on + '" stroke-width="1.5"/>' + t(1534, 72, 'STATION', { fill: on });
+  F.steps.forEach(function (st, i) {
+    var x = X(st.range), y = cy + 96 * Math.tanh(st.y / Math.max(st.range, 2) * 3.4), rot = SBP.clamp(st.y / Math.max(st.range, 2) * 60, -14, 14), fired = st.pulses.length, k = 1.1;
+    var stuck = F.stuck && st.t >= F.stuck.from;
+    s += '<g transform="translate(' + f(x - 110) + ' ' + f(y) + ') rotate(' + f(rot) + ' 55 0) scale(' + k + ')" >' + SBP.capsule({ stroke: fired ? on : '#59627A', sw: 0.9, fill: '#0B0F18' }) + '</g>';
+    if (stuck && i % 2 === 0) s += '<path d="M' + f(x - 76) + ' ' + f(y + 28) + 'l-4 ' + f(12 + (i % 5) * 3) + '" stroke="' + vio + '" stroke-width="1.6"/>';
+  });
+  var last = F.steps[F.steps.length - 1];
+  s += '<g transform="translate(' + f(x1 - 110) + ' ' + cy + ') scale(1.1)">' + SBP.capsule({ stroke: on, sw: 1.8, detail: true, fill: '#090C13' }) + '</g>';
+  var sp = F.steps.filter(function (st) { return st.t >= F.stuck.from; })[0];
+  s += '<path d="M' + f(X(sp.range) - 76) + ' 62V' + (cy + 130) + '" stroke="' + vio + '" stroke-width="1.5"/>' + t(X(sp.range) - 70, 72, 'THRUSTER 15 STICKS OPEN · ' + SBP.fmtT(F.stuck.from), { fill: vio });
+  $('strobe').innerHTML = s;
+
+  /* ---- thruster score: sixteen rows ---- */
+  var W = 1520, lx = 46, rx = W, rowH = 21, top = 8, T = F.T, PXS = 5.2;
+  function TX(tt) { return lx + (rx - lx) * tt / T; }
+  s = '';
+  for (var i = 0; i < 16; i++) {
+    var y = top + i * rowH, isStuck = i === 14;
+    s += '<path d="M' + lx + ' ' + f(y + rowH / 2) + 'H' + rx + '" stroke="' + line + '" stroke-width="1"/>' + t(lx - 10, y + rowH / 2 + 3.5, (i < 9 ? '0' : '') + (i + 1), { anchor: 'end', fill: isStuck ? vio : (i % 4 === 0 ? on : dim) });
+    if (i % 4 === 0 && i) s += '<path d="M0 ' + f(y) + 'H' + rx + '" stroke="' + line + '" stroke-width="1" stroke-dasharray="2 4"/>';
+  }
+  F.steps.forEach(function (st) { st.pulses.forEach(function (p) {
+    var w = Math.max(1.6, p.dur * PXS), y = top + p.th * rowH + 3;
+    s += '<rect x="' + f(TX(st.t)) + '" y="' + f(y) + '" width="' + f(w) + '" height="' + (rowH - 6) + '" fill="' + (p.th === 14 && st.t >= F.stuck.from ? vio : on) + '"/>';
+  }); });
+  s += '<rect x="' + f(TX(F.stuck.from)) + '" y="' + (top + 14 * rowH + rowH / 2 - 1) + '" width="' + f(rx - TX(F.stuck.from)) + '" height="2" fill="' + vio + '"/>';
+  var by = top + 16 * rowH;
+  F.holds.forEach(function (h, i) { s += '<path d="M' + f(TX(h)) + ' ' + (top - 6) + 'V' + (by + 12) + '" stroke="' + dim + '" stroke-dasharray="3 4"/>' + t(TX(h) + 5, by + 22, 'HOLD ' + SBP.HOLDS[i] + ' M', { fill: on }); });
+  s += '<path d="M' + f(TX(F.stuck.from)) + ' ' + (top - 6) + 'V' + (by + 12) + '" stroke="' + vio + '"/>';
+  s += t(lx, by + 22, 'T+00:00') + t(rx, by + 22, SBP.fmtT(T) + ' · CONTACT', { anchor: 'end', fill: on });
+  $('score').innerHTML = s;
+  var np = F.steps.reduce(function (a, st) { return a + st.pulses.length; }, 0);
+  $('sc').textContent = 'Thruster score · sixteen rows, one per thruster. ' + np + ' pulses in ' + F.steps.length + ' decisions. Pulse lengths drawn at 13× so the shortest, 0.035 s, can be seen.';
+  $('prov').innerHTML = 'Model A · Tier 4 · Seed 0017 · Burn time ' + F.burn.toFixed(2) + ' s · State hash ' + F.hash + '<br>Thruster numbering and layout are schematic until the vehicle model is fixed.';
+  document.body.dataset.ready = '1';
+})();
+</script>
+</body></html>

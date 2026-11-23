@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><title>Proof 04. Bullseye</title>
+<link rel="stylesheet" href="proof.css">
+<style>
+.sheet { width: 1080px; height: 1350px; }
+h1 { position: absolute; left: 40px; top: 84px; font: 700 112px/0.9 var(--sans); letter-spacing: -.055em; z-index: 3; }
+h1 span { color: var(--ink); }
+#bull { position: absolute; left: 0; top: 0; }
+.count { position: absolute; left: 40px; bottom: 84px; z-index: 3; }
+.count .matrix { font-size: 150px; letter-spacing: -.02em; }
+.foot { position: absolute; left: 40px; right: 40px; bottom: 30px; display: flex; justify-content: space-between; align-items: flex-end; z-index: 3; }
+.side { position: absolute; right: 40px; top: 96px; width: 250px; text-align: right; z-index: 3; }
+</style></head>
+<body><div class="sheet violet" id="sheet">
+  <svg id="bull" width="1080" height="1350" fill="none"></svg>
+  <div class="hdr mono" style="z-index:3"><span>SpaceBench Dock</span><span class="dim">Proof No. 04 · Bullseye trace</span><span class="dim">04/09</span><span class="dim">Model A · Tier 4</span></div>
+  <h1>Inside<br>the circle,<br><span>or not.</span></h1>
+  <div class="side mono s">The view down the docking axis.<br>Thirty seeds, thirty approaches.<br>Each line ends where the capsule<br>first touched the port.</div>
+  <div class="count"><div class="mono" style="margin-bottom:14px">Ended inside 0.10 m</div><div class="matrix" id="n"></div></div>
+  <div class="foot"><div class="mono s dim" style="max-width:620px">Sideways misalignment at first contact, one of seven limits. Rings at 0.10, 1 and 10 m on a log scale. Limit from IDSS IDD Rev F, table 3.3.1.1-2.</div><div class="mono s"><span class="stamp">Specimen · not a result</span></div></div>
+  <div class="grain" style="opacity:.22"></div>
+</div>
+<script src="proof.js"></script>
+<script>
+(async function () {
+  await document.fonts.load('700 100px Geist'); await document.fonts.load('100px "SB Matrix"'); await document.fonts.ready;
+  var f = SBP.f, CX = 610, CY = 760, K = 205, R0 = 0.01;
+  function rad(rho) { return Math.max(0, K * Math.log10(Math.max(rho, R0) / R0)); }
+  var s = '', ink = '#090C13';
+  [[10, 1.2], [1, 1.2]].forEach(function (r) { s += '<circle cx="' + CX + '" cy="' + CY + '" r="' + f(rad(r[0])) + '" stroke="#fff" stroke-width="' + r[1] + '" fill="none" opacity=".55"/>'; });
+  [2, 5, 20, 50, 0.2, 0.5].forEach(function (r) { s += '<circle cx="' + CX + '" cy="' + CY + '" r="' + f(rad(r)) + '" stroke="#fff" stroke-width=".7" fill="none" opacity=".22" stroke-dasharray="2 5"/>'; });
+  s += '<circle cx="' + CX + '" cy="' + CY + '" r="' + f(rad(0.1)) + '" fill="' + ink + '"/>';
+  s += '<path d="M' + (CX - 1200) + ' ' + CY + 'H' + (CX + 1200) + 'M' + CX + ' ' + (CY - 1200) + 'V' + (CY + 1200) + '" stroke="#fff" stroke-width=".7" opacity=".3" stroke-dasharray="14 4 2 4"/>';
+  var inside = 0, ends = '', hero = '';
+  for (var seed = 1; seed <= 30; seed++) {
+    var F = SBP.flight(seed, 4), d = '', n = 260, T = F.duration;
+    for (var i = 0; i <= n; i++) { var p = F.lateralAt(T * i / n), a = Math.atan2(p[1], p[0]), r = rad(p[2]); d += (i ? 'L' : 'M') + f(CX + r * Math.cos(a)) + ' ' + f(CY + r * Math.sin(a)); }
+    var e = F.end, ea = Math.atan2(e.z, e.y), er = rad(e.rho), ex = CX + er * Math.cos(ea), ey = CY + er * Math.sin(ea), ok = !F.early && e.rho <= 0.10;
+    if (ok) inside++;
+    if (seed === 17) {
+      hero = '<path d="' + d + '" stroke="#fff" stroke-width="2.6" fill="none" stroke-linejoin="round"/>';
+      F.steps.forEach(function (st) { var a2 = Math.atan2(st.z, st.y), r2 = rad(st.rho); hero += '<circle cx="' + f(CX + r2 * Math.cos(a2)) + '" cy="' + f(CY + r2 * Math.sin(a2)) + '" r="3.4" fill="#fff"/>'; });
+    } else s += '<path d="' + d + '" stroke="#fff" stroke-width="1" fill="none" opacity=".42" stroke-linejoin="round"/>';
+    ends += ok ? '<circle cx="' + f(ex) + '" cy="' + f(ey) + '" r="' + (seed === 17 ? 7 : 4.2) + '" fill="#fff"/>' : '<circle cx="' + f(ex) + '" cy="' + f(ey) + '" r="6" fill="' + ink + '"/><path d="M' + f(ex - 3) + ' ' + f(ey - 3) + 'l6 6m0 -6l-6 6" stroke="#fff" stroke-width="1.4"/>';
+  }
+  s += hero + ends;
+  function lab(r, txt) { return '<text x="' + f(CX + rad(r) + 8) + '" y="' + (CY - 8) + '" font-family="Geist Mono" font-size="11" font-weight="500" letter-spacing="1" fill="#fff">' + txt + '</text>'; }
+  s += lab(0.1, '0.10 M') + lab(1, '1 M') + '<text x="' + f(CX + 8) + '" y="' + f(CY - rad(10) + 18) + '" font-family="Geist Mono" font-size="11" font-weight="500" letter-spacing="1" fill="#fff">10 M</text>';
+  document.getElementById('bull').innerHTML = s;
+  document.getElementById('n').innerHTML = '<div style="display:flex;align-items:flex-end;gap:22px">' + SBP.dots(inside, { pitch: 22, fg: '#fff' }) + '<span>' + SBP.dots('/30', { pitch: 11, fg: '#090C13' }) + '</span></div>';
+  document.body.dataset.ready = '1';
+})();
+</script>
+</body></html>

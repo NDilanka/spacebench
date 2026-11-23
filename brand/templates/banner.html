@@ -1,30 +1,33 @@
 <!doctype html>
-<html lang="en" data-theme="dark" data-sim="dock">
+<html lang="en" data-theme="dark" data-sim="parent">
 <head>
 <meta charset="utf-8">
-<title>SpaceBench banner</title>
+<title>SpaceBench profile banner</title>
 <link rel="stylesheet" href="../tokens/tokens.css">
 <link rel="stylesheet" href="../css/brand.css">
 <link rel="stylesheet" href="templates.css">
 <script src="../js/sb-logo.js"></script>
-<script src="../js/sb-graphics.js"></script>
 <script src="template.js"></script>
 </head>
-<body class="sb t t-banner">
-<!-- 1500 x 500. Keep the left 500 px quiet: profile pictures overlap it. -->
-<div class="limb" id="limb"></div>
-<div class="sb-meta" style="position:relative"><span id="m1"></span><span>Six axes · One attempt · 30 hidden seeds</span><span>Specimen signature</span></div>
-<div class="mid grow" style="align-items:flex-end;padding-bottom:110px">
-  <span class="lk" data-sb-logo="lockup" data-follow-sim></span>
-  <div id="sig" style="width:760px"></div>
+<body class="sb t t-plume t-xbanner">
+<!-- 1500 x 500. Variants: ?sim=parent|dock&theme=light|dark&by=1.
+     The profile picture covers the lower left, and phones crop about 60 px off the top and bottom, so the text sits right of centre.
+     by=1 adds the partner logos from ../partners/. They are other companies' marks: placed whole, never redrawn or recoloured. -->
+<img class="ground" id="ground" alt="">
+<div class="txt">
+  <span data-sb-logo="lockup" data-follow-sim></span>
+  <p>A benchmark family that tests language models on closed-loop control of spacecraft in simulators.</p>
+  <div class="by" id="by" hidden><span>Powered by</span><div><img id="p1" alt="Factory" height="25"><img id="p2" alt="GMI Cloud" height="34"></div></div>
 </div>
 <script>
 (function () {
-  var P = SBParams, G = SBGraphics;
-  document.getElementById('m1').textContent = P.simName;
-  document.getElementById('limb').innerHTML = G.limb({ width: 1500, height: 250, count: 3800, top: 120, radius: 3200, seed: 7 });
-  document.getElementById('sig').innerHTML = G.flightSignature(G.specimenFlight(421, 3), { width: 760, height: 54, labels: false });
-  P.done();
+  var P = SBParams, dark = P.theme === 'dark', $ = function (i) { return document.getElementById(i); };
+  $('ground').src = '../textures/plume-banner-' + (dark ? 'ink' : 'film') + '.jpg';
+  if (P.get('by', '') && dark) {   /* GMI Cloud supplied a white logo only, so the partner row exists on ink only */
+    $('by').hidden = false; $('p1').src = '../partners/factory-lockup-white.svg'; $('p2').src = '../partners/gmi-cloud-white.svg';
+  }
+  document.querySelectorAll('[data-follow-sim]').forEach(function (el) { el.setAttribute('data-sim', P.sim); }); SBLogo.mount();
+  Promise.all([document.fonts.ready].concat([].map.call(document.images, function (i) { return i.src ? i.decode().catch(function () {}) : null; }))).then(function () { document.body.dataset.ready = '1'; });
 })();
 </script>
 </body>

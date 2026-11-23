@@ -1,0 +1,17 @@
+Hershey Fonts acknowledgement
+
+The stroke data in ../data/hershey.js is converted from the Hershey font file futural.jhf
+(distribution: https://github.com/kamalmostafa/hershey-fonts).
+
+- The Hershey Fonts were originally created by Dr. A. V. Hershey while working at the
+  U. S. National Bureau of Standards.
+- The format of the Font data in this distribution was originally created by
+      James Hurt
+      Cognition, Inc.
+      900 Technology Park Drive
+      Billerica, MA 01821
+      (mit-eddie!ci-dandelion!hurt)
+
+Licence terms of that distribution: the fonts may be used by anyone for any purpose, commercial
+or otherwise, provided these acknowledgements are distributed with the font data, and the data is
+not converted into the format distributed by the U.S. NTIS.

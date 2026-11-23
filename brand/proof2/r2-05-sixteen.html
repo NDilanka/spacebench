@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><title>SB-D-001. Fig. 01, Sixteen</title>
+<link rel="stylesheet" href="r2.css">
+<style>
+#sheet { width: 1600px; height: 1100px; }
+.hdr { position: absolute; left: 48px; right: 48px; top: 40px; display: flex; justify-content: space-between; }
+h1 { position: absolute; left: 44px; top: 84px; font: 700 84px/.98 var(--sans); letter-spacing: -.05em; }
+#copy { position: absolute; left: 48px; top: 288px; width: 330px; font: 400 16.5px/1.46 var(--sans); }
+#draw { position: absolute; left: 0; top: 0; }
+#tab { position: absolute; left: 1030px; right: 48px; top: 96px; }
+#tab .r { display: grid; grid-template-columns: 44px 1.1fr .8fr 1.25fr; height: 26px; align-items: center; border-bottom: .35px solid var(--fg); font: 500 13px/1 var(--mono); }
+#tab .r.h { height: 30px; border-bottom: 1.25px solid var(--fg); }
+#tab .r.v { color: var(--violet); font-weight: 700; border-bottom-color: var(--violet); }
+#tab .r span:last-child { text-align: right; }
+#fact { position: absolute; left: 1030px; right: 48px; top: 584px; }
+#fact h2 { font: 700 31px/1.05 var(--sans); letter-spacing: -.035em; margin-bottom: 14px; }
+#fact .r { display: grid; grid-template-columns: 1fr auto; padding: 8px 0 7px; border-top: .35px solid var(--fg); font: 400 15.5px/1.3 var(--sans); }
+#fact .r b { font: 600 15px/1.3 var(--mono); }
+#fact .r.v b { color: var(--violet); }
+#fact .cap { margin-top: 12px; border-top: 1.25px solid var(--fg); padding-top: 10px; }
+#legend { position: absolute; left: 48px; top: 800px; width: 280px; }
+#legend .r { display: grid; grid-template-columns: 40px 1fr; align-items: center; padding: 7px 0; font: 400 14.5px/1.3 var(--sans); }
+</style></head>
+<body><div class="sheet" id="sheet">
+  <svg id="draw" width="1600" height="1100"></svg>
+  <div class="hdr cap"><div><b style="color:var(--fg)">SpaceBench Dock</b></div><div>Fig. 01 · Sixteen</div><div>Drawn from the simulator's own table</div></div>
+  <h1>Every push<br>is also a turn.</h1>
+  <div id="copy">None of the sixteen thrusters pushes through the centre of mass. Any single firing moves the capsule and turns it. That coupling is what the pilot has to manage.</div>
+  <div id="legend"></div>
+  <div id="tab"></div>
+  <div id="fact"></div>
+  <div id="tb"></div>
+</div>
+<script src="data/vehicle.js"></script><script src="data/hershey.js"></script><script src="r2.js"></script>
+<script>
+(function () {
+  var f = SB2.f, VH = window.SB_VEHICLE, T = VH.thrusters, FG = '#0B0E16', V = '#6B3BFF', cx = 660, cy = 610, S = 105, R = 2 * S;
+  function cross(a, b) { return [a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]]; }
+  var torque = T.map(function (t) { return cross(t.pos, t.dir.map(function (d) { return d * VH.force_n; })); });
+  /* the pair of tangential thrusters that gives the largest pure couple about the long axis with zero net force, taken from the table */
+  var pair = [2, 7], net = [0, 1, 2].map(function (k) { return (T[2].dir[k] + T[7].dir[k]) * VH.force_n; }), tq = [0, 1, 2].map(function (k) { return torque[2][k] + torque[7][k]; });
+  var alpha = tq[0] / VH.inertia[0][0], pulse = 0.035, rate = alpha * pulse * 180 / Math.PI;
+  function px(y, z) { return [cx + y * S, cy - z * S]; }
+  function arrow(x0, y0, x1, y1, col, w) {
+    var a = Math.atan2(y1 - y0, x1 - x0), h = 11, hw = 4.6;
+    var bx = x1 - h * Math.cos(a), by = y1 - h * Math.sin(a);
+    return '<path d="M' + f(x0) + ' ' + f(y0) + 'L' + f(bx) + ' ' + f(by) + '" stroke="' + col + '" stroke-width="' + w + '" fill="none"/><path d="M' + f(x1) + ' ' + f(y1) + 'L' + f(bx - hw * Math.sin(a)) + ' ' + f(by + hw * Math.cos(a)) + 'L' + f(bx + hw * Math.sin(a)) + ' ' + f(by - hw * Math.cos(a)) + 'Z" fill="' + col + '"/>';
+  }
+  function num(x, y, i, an, col) { return '<text x="' + f(x) + '" y="' + f(y) + '" text-anchor="' + (an || 'middle') + '" font-family="Geist Mono" font-size="14" font-weight="' + (col ? 700 : 600) + '" fill="' + (col || FG) + '">' + i + '</text>'; }
+  function toward(x, y, r) { return '<circle cx="' + f(x) + '" cy="' + f(y) + '" r="' + r + '" fill="#ECEEF1" stroke="' + FG + '" stroke-width="1.25"/><circle cx="' + f(x) + '" cy="' + f(y) + '" r="2.4" fill="' + FG + '"/>'; }
+  function away(x, y, r) { var k = r * .62; return '<circle cx="' + f(x) + '" cy="' + f(y) + '" r="' + r + '" fill="#ECEEF1" stroke="' + FG + '" stroke-width="1.25"/><path d="M' + f(x - k) + ' ' + f(y - k) + 'l' + f(2 * k) + ' ' + f(2 * k) + 'M' + f(x + k) + ' ' + f(y - k) + 'l' + f(-2 * k) + ' ' + f(2 * k) + '" stroke="' + FG + '" stroke-width="1.25"/>'; }
+  var s = '';
+  /* axes to the sheet edge; the vertical one stops above the dimension */
+  s += '<path class="axis" d="M0 ' + cy + 'H1000M' + cx + ' 236V' + (cy + R + 118) + '"/>';
+  s += '<circle class="cut" cx="' + cx + '" cy="' + cy + '" r="' + R + '"/>';
+  s += '<circle cx="' + cx + '" cy="' + cy + '" r="3" fill="' + FG + '"/>';
+  /* thrusters */
+  T.forEach(function (t, i) {
+    var p = px(t.pos[1], t.pos[2]), ux = t.pos[1] / 2, uz = t.pos[2] / 2, isV = pair.indexOf(i) >= 0;
+    if (t.dir[0] !== 0) {
+      var k = t.dir[0] > 0 ? 34 : 68, x = p[0] + ux * k, y = p[1] - uz * k;
+      s += t.dir[0] > 0 ? toward(x, y, 10) : away(x, y, 10);
+      s += ux !== 0 ? num(x, y + 30, i) : num(x + 20, y + 5, i, 'start');
+    } else {
+      var L = isV ? 96 : 66, x1 = p[0] + t.dir[1] * L, y1 = p[1] - t.dir[2] * L;
+      s += arrow(p[0], p[1], x1, y1, isV ? V : FG, isV ? 3 : 1.25);
+      if (t.dir[1] !== 0) s += num(x1 + t.dir[1] * 9, y1 + 5, i, t.dir[1] > 0 ? 'start' : 'end');
+      else s += num(x1 + (ux > 0 ? 13 : -13), y1 + (t.dir[2] > 0 ? 12 : -2), i, ux > 0 ? 'start' : 'end', isV ? V : null);
+    }
+    s += '<rect x="' + f(p[0] - 5) + '" y="' + f(p[1] - 5) + '" width="10" height="10" fill="' + FG + '"/>';
+  });
+  /* the couple */
+  var ra = 74, a0 = -28 * Math.PI / 180, a1 = -152 * Math.PI / 180;
+  s += '<path d="M' + f(cx + ra * Math.cos(a0)) + ' ' + f(cy + ra * Math.sin(a0)) + 'A' + ra + ' ' + ra + ' 0 0 0 ' + f(cx + ra * Math.cos(a1)) + ' ' + f(cy + ra * Math.sin(a1)) + '" fill="none" stroke="' + V + '" stroke-width="3"/>';
+  var hx = cx + ra * Math.cos(a1), hy = cy + ra * Math.sin(a1);
+  s += '<path d="M' + f(hx - 9) + ' ' + f(hy + 13) + 'l2 -17l13 9z" fill="' + V + '"/>';
+  s += '<text x="' + (cx + 34) + '" y="' + (cy - 104) + '" font-family="Geist Mono" font-size="15" font-weight="700" fill="' + V + '">' + tq[0].toLocaleString('en-US') + ' N·m</text>';
+  /* dimension */
+  var dy = cy + R + 150;
+  s += '<path class="dim" d="M' + (cx - R) + ' ' + (cy + 96) + 'V' + (dy + 8) + 'M' + (cx + R) + ' ' + (cy + 96) + 'V' + (dy + 8) + '"/><path class="cut" d="M' + (cx - R) + ' ' + dy + 'H' + (cx + R) + '"/><path d="M' + (cx - R) + ' ' + dy + 'l11 -3.6v7.2zM' + (cx + R) + ' ' + dy + 'l-11 -3.6v7.2z" fill="' + FG + '"/>';
+  s += '<text x="' + (cx - R + 20) + '" y="' + (dy - 10) + '" font-family="Geist Mono" font-size="12" font-weight="600" letter-spacing=".8" fill="' + FG + '">4.0 M BETWEEN OPPOSITE PODS</text>';
+  /* axis names */
+  s += '<text x="966" y="' + (cy - 10) + '" font-family="Geist Mono" font-size="12" font-weight="600" fill="' + FG + '">+Y</text><text x="' + (cx + 10) + '" y="252" font-family="Geist Mono" font-size="12" font-weight="600" fill="' + FG + '">+Z</text>';
+  s += SB2.plot('the long axis, x,', { x: cx + 26, y: cy + 52, size: 12.5 }) + SB2.plot('points at you', { x: cx + 26, y: cy + 76, size: 12.5 });
+  s += '<path class="dim" style="stroke-width:1" d="M' + (cx + 22) + ' ' + (cy + 48) + 'q-14 -8 -17 -40"/>';
+  document.getElementById('draw').innerHTML = s;
+
+  document.getElementById('legend').innerHTML =
+    '<div class="r"><svg width="26" height="26">' + toward(13, 13, 10) + '</svg><span>Pushes toward you, along +x</span></div>' +
+    '<div class="r"><svg width="26" height="26">' + away(13, 13, 10) + '</svg><span>Pushes away from you, along −x</span></div>' +
+    '<div class="r"><svg width="34" height="26">' + arrow(2, 13, 32, 13, FG, 1.25) + '</svg><span>Pushes across, in the plane of the drawing</span></div>';
+
+  function vec(v) { return '(' + v.map(function (c) { return (c < 0 ? '−' : '') + Math.abs(c); }).join(', ') + ')'; }
+  function dirName(d) { var k = d[0] ? 'x' : d[1] ? 'y' : 'z', v = d[0] || d[1] || d[2]; return (v > 0 ? '+' : '−') + k; }
+  var h = '<div class="r h cap"><span>No.</span><span>Pod at, m</span><span>Pushes</span><span>Turns, N·m</span></div>';
+  T.forEach(function (t, i) { h += '<div class="r' + (pair.indexOf(i) >= 0 ? ' v' : '') + '"><span>' + i + '</span><span>' + vec(t.pos) + '</span><span>' + dirName(t.dir) + '</span><span>' + vec(torque[i]) + '</span></div>'; });
+  document.getElementById('tab').innerHTML = h;
+
+  document.getElementById('fact').innerHTML = '<h2>Fire 2 and 7 together.<br>No push, pure roll.</h2>' +
+    '<div class="r"><span>Net force</span><b>' + Math.abs(net[0] + net[1] + net[2]) + ' N</b></div>' +
+    '<div class="r v"><span>Torque about the long axis</span><b>' + tq[0].toLocaleString('en-US') + ' N·m</b></div>' +
+    '<div class="r"><span>Roll rate added by one 0.035 s pulse</span><b>' + rate.toFixed(3) + ' deg/s</b></div>' +
+    '<div class="r"><span>Roll rate allowed at first contact</span><b>0.20 deg/s</b></div>' +
+    '<div class="cap">Each thruster ' + VH.force_n + ' N. Roll inertia ' + VH.inertia[0][0].toLocaleString('en-US') + ' kg·m², an estimate inside the docking standard\'s envelope. The pair is checked by a unit test in the core.</div>';
+
+  document.getElementById('tb').innerHTML = SB2.titleBlock([['Drawing', 'SB-D-001'], ['Title', 'Fig. 01 · Sixteen', 1.2], ['View', 'Along the long axis · 105 px = 1 m', 2], ['Source', VH.source + ', lines ' + VH.lines.thrusters[0] + ' to ' + VH.lines.thrusters[1], 2.4], ['Status', 'Placeholder layout. Not Dragon\'s', 2], ['Date', '2026-11-18']], 'left:48px;right:48px;bottom:40px');
+  document.fonts.ready.then(function () { document.body.dataset.ready = '1'; });
+})();
+</script>
+</body></html>
