@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><title>SB-D-000. The mark</title>
+<link rel="stylesheet" href="../tokens/tokens.css">
+<link rel="stylesheet" href="../css/sheet.css">
+<style>
+#sheet { width: 1600px; height: 1100px; }
+.hdr { position: absolute; left: 48px; right: 48px; top: 40px; display: flex; justify-content: space-between; }
+h1 { position: absolute; left: 44px; top: 92px; font: 700 76px/.97 var(--sans); letter-spacing: -.05em; }
+#draw { position: absolute; left: 0; top: 0; }
+#copy { position: absolute; left: 48px; top: 344px; width: 372px; font: 400 17px/1.45 var(--sans); letter-spacing: -.008em; }
+#spec { position: absolute; left: 48px; top: 560px; width: 372px; }
+#spec .r { display: grid; grid-template-columns: 1fr auto; gap: 12px; padding: 8px 0 7px; border-top: .5px solid var(--rule); font: 400 14px/1.3 var(--sans); }
+#spec .r:last-child { border-bottom: .5px solid var(--rule); }
+#spec .r b { font: 500 13px/1.3 var(--mono); }
+#right { position: absolute; left: 1250px; top: 186px; width: 302px; }
+#right .cap { margin-bottom: 14px; }
+#right .row { display: flex; align-items: flex-end; justify-content: space-between; margin-bottom: 8px; }
+#right .lab { display: flex; justify-content: space-between; margin-bottom: 58px; }
+#right .lab .cap { margin: 0; text-align: center; }
+#right svg path { fill: var(--fg); }
+#right .sb-logo__b { fill: var(--fg-3); }
+#right .wm { display: block; margin-bottom: 54px; }
+</style></head>
+<body><div class="sheet" id="sheet">
+  <svg id="draw" width="1600" height="1100"></svg>
+  <div class="hdr cap"><div><b>SpaceBench</b></div><div>Fig. 00 · The mark</div><div>Drawn from logo/geometry.json</div></div>
+  <h1>A disc,<br>a line,<br>an arrow.</h1>
+  <div id="copy">A surveyor's bench mark is a level line with a broad arrow under it, pointing up: a fixed height that every later measurement is taken from. Ours is one disc with the line and the arrow cut out of it. Nothing is drawn on top, so it holds as one shape at any size.</div>
+  <div id="spec"></div>
+  <div id="right">
+    <div class="cap">One mark, three headings</div>
+    <div class="row" id="turn"></div>
+    <div class="lab"><div class="cap">SpaceBench<br>0 deg</div><div class="cap">Dock<br>90 deg</div><div class="cap">Landing<br>180 deg</div></div>
+    <div class="cap">Sizes, px</div>
+    <div class="row" id="sizes"></div>
+    <div class="lab" id="sizelab"></div>
+    <div class="cap">Wordmark. 48 px and up: cut</div>
+    <div class="wm" data-t="cut wordmark" id="wm"></div>
+    <div class="cap">Under 48 px: plain, with the mark</div>
+    <div class="wm" data-t="lockup" id="lk"></div>
+  </div>
+  <div id="tb"></div>
+</div>
+<script src="../js/sb-logo.js"></script><script src="../js/sb-hershey.js"></script><script src="../js/sb-draw.js"></script>
+<script>
+(function () {
+  var f = SBDraw.f, G = SBLogo.data.geometry, K = 5.7, cx = 795, cy = 528, ox = cx - G.canvas / 2 * K, oy = cy - G.canvas / 2 * K;
+  var U = function (x) { return ox + x * K; }, V = function (y) { return oy + y * K; };
+  var T = function (x, y, t, a) { return '<text x="' + f(x) + '" y="' + f(y) + '" text-anchor="' + (a || 'start') + '" font-family="Geist Mono" font-size="12" font-weight="500" letter-spacing=".6" fill="currentColor">' + t + '</text>'; };
+  var R = G.radius, c0 = G.centre, s = '';
+  /* the canvas edge is the clear space */
+  s += '<rect class="dim" x="' + f(U(0)) + '" y="' + f(V(0)) + '" width="' + f(G.canvas * K) + '" height="' + f(G.canvas * K) + '"/>';
+  /* centre lines stop short of the disc */
+  s += '<path class="axis" d="M' + f(U(0) - 16) + ' ' + f(V(c0[1])) + 'H' + f(U(c0[0] - R) - 8) + 'M' + f(U(c0[0] + R) + 8) + ' ' + f(V(c0[1])) + 'H' + f(U(G.canvas) + 16) +
+    'M' + f(U(c0[0])) + ' ' + f(V(0) - 26) + 'V' + f(V(c0[1] - R) - 8) + 'M' + f(U(c0[0])) + ' ' + f(V(c0[1] + R) + 8) + 'V' + f(V(G.canvas) + 14) + '"/>';
+  s += '<path fill="var(--fg)" transform="translate(' + f(ox) + ' ' + f(oy) + ') scale(' + K + ')" d="' + SBLogo.data.lockups.parent.mark.mark + '"/>';
+  /* heights, on the right */
+  var xd = U(G.canvas) + 44, edge = function (y) { return c0[0] + Math.sqrt(R * R - (y - c0[1]) * (y - c0[1])); };
+  [[G.slot[0], '25'], [G.slot[1], '33.5'], [G.baseY, '100']].forEach(function (h) {
+    s += '<path class="dim" d="M' + f(U(edge(h[0])) + 8) + ' ' + f(V(h[0])) + 'H' + f(xd + 6) + '"/>' + T(xd + 14, V(h[0]) + 4, h[1]);
+  });
+  s += '<path class="dim" d="M' + f(xd) + ' ' + f(V(G.slot[0]) - 16) + 'V' + f(V(G.baseY) + 16) + '"/>';
+  /* stations, underneath */
+  var yd = V(G.canvas) + 40;
+  [[c0[0] - R, c0[1]], [G.cutX[0], G.baseY], [G.cutX[1], G.baseY], [G.cutX[2], G.baseY], [c0[0] + R, c0[1]]].forEach(function (p) {
+    s += '<path class="dim" d="M' + f(U(p[0])) + ' ' + f(V(G.canvas) + 22) + 'V' + f(yd + 6) + '"/>' + T(U(p[0]), yd + 22, String(p[0]), 'middle');
+  });
+  s += '<path class="dim" d="M' + f(U(c0[0] - R) - 16) + ' ' + f(yd) + 'H' + f(U(c0[0] + R) + 16) + '"/>';
+  /* width across the disc, above */
+  var yt = V(0) - 44;
+  s += '<path class="dim" d="M' + f(U(c0[0] - R)) + ' ' + f(yt) + 'H' + f(U(c0[0]) - 80) + 'M' + f(U(c0[0]) + 80) + ' ' + f(yt) + 'H' + f(U(c0[0] + R)) + 'M' + f(U(c0[0] - R)) + ' ' + f(yt - 6) + 'v12M' + f(U(c0[0] + R)) + ' ' + f(yt - 6) + 'v12"/>' + T(U(c0[0]), yt + 4, '106 ACROSS', 'middle');
+  /* two plotter notes, clear of everything */
+  s += SBDraw.plot('the line', { x: U(95), y: V(13), size: 14 }) + SBDraw.plot('the arrow', { x: U(94), y: V(110), size: 14 });
+  document.getElementById('draw').innerHTML = s;
+
+  document.getElementById('spec').innerHTML = [
+    ['Canvas', '120 by 120'], ['Disc', 'centre 60, 60 · radius 53'], ['Clear space', '7, the canvas edge'], ['Line', 'y 25 to 33.5'],
+    ['Arrow point', '60, 33.5'], ['Arrow feet', 'y 100 · x 36, 60, 84 · 10 wide']
+  ].map(function (r) { return '<div class="r"><span>' + r[0] + '</span><b>' + r[1] + '</b></div>'; }).join('');
+
+  var mk = function (sim, px) { return '<svg class="wm" data-t="mark ' + sim + ' ' + px + '" width="' + px + '" height="' + px + '" viewBox="0 0 120 120"><path d="' + SBLogo.data.lockups[sim].mark.mark + '"/></svg>'; };
+  document.getElementById('turn').innerHTML = ['parent', 'dock', 'landing'].map(function (x) { return mk(x, 84); }).join('');
+  var sz = [64, 48, 32, 24, 16];
+  document.getElementById('sizes').innerHTML = sz.map(function (p) { return mk('parent', p); }).join('');
+  document.getElementById('sizelab').innerHTML = sz.map(function (p) { return '<div class="cap" style="width:' + Math.max(p, 20) + 'px">' + p + '</div>'; }).join('');
+  document.getElementById('wm').innerHTML = SBLogo.wordmark('parent', { height: 58 });
+  document.getElementById('lk').innerHTML = SBLogo.lockup('parent', { height: 30 });
+  document.getElementById('tb').innerHTML = SBDraw.titleBlock([['Drawing', 'SB-D-000'], ['Title', 'The mark', 1.2], ['Scale', '1 unit = 5.7 px'], ['Source', 'logo/geometry.json, build/build_logo.py', 2.2], ['Status', 'Rev. B'], ['Date', '2026-11-18']], 'left:48px;right:48px;bottom:44px');
+  document.fonts.ready.then(function () { document.body.dataset.ready = '1'; });
+})();
+</script>
+</body></html>

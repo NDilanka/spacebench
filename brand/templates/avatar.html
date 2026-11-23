@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="en" data-theme="light" data-sim="parent">
+<head>
+<meta charset="utf-8">
+<title>SpaceBench profile picture</title>
+<link rel="stylesheet" href="../tokens/tokens.css">
+<link rel="stylesheet" href="../css/brand.css">
+<link rel="stylesheet" href="templates.css">
+<script src="../js/sb-logo.js"></script>
+<script src="template.js"></script>
+</head>
+<body class="sb t t-plume t-avatar">
+<!-- 800 x 800. Variants: ?sim=parent|dock|landing&theme=light|dark. Platforms crop it to a circle: the plate's corners stay inside that circle. -->
+<div id="art"></div>
+<script>
+(function () {
+  var P = SBParams;
+  document.getElementById('art').innerHTML = SBPlate(P.sim, { dark: P.theme === 'dark', size: 800, base: '../textures/plume-square' });
+  var im = document.querySelectorAll('image'), n = 0;
+  im.forEach(function (i) { var t = new Image(); t.onload = t.onerror = function () { if (++n === im.length) setTimeout(function () { document.body.dataset.ready = '1'; }, 60); }; t.src = i.getAttribute('href'); });
+})();
+</script>
+</body>
+</html>

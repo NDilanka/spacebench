@@ -17,7 +17,8 @@
 .sb-code{font:var(--sb-type-code)}
 .sb-readout-xl{font:var(--sb-type-readout-xl)}
 .sb-readout{font:var(--sb-type-readout)}
-.sb-readout-sm{font:var(--sb-type-readout-sm)}
+/* The wordmark's cut lettering, for a headline on an identity piece. 68 px and up: smaller, the cuts close. */
+.sb-cut{font:800 96px/1 var(--sb-font-display);letter-spacing:0;font-synthesis:none;margin:0}
 .sb-display-xl,.sb-display,.sb-h1,.sb-h2,.sb-h3,.sb-lead{margin:0;text-wrap:balance}
 /* Two-tone sentence: the second tone carries the qualifier, never the claim. */
 .sb-tone{color:var(--sb-fg-3)}
@@ -71,7 +72,7 @@
 .sb-chip--soft{background:var(--sb-accent-soft);border-color:var(--sb-accent-line);color:var(--sb-accent-text)}
 .sb-tabs{display:inline-flex;padding:3px;gap:2px;background:var(--sb-bg-sunken);border-radius:var(--sb-radius-2);border:1px solid var(--sb-line)}
 .sb-tabs button{appearance:none;border:0;background:transparent;color:var(--sb-fg-2);height:26px;padding:0 10px;border-radius:4px;font:var(--sb-type-label);letter-spacing:var(--sb-track-label);text-transform:uppercase;cursor:pointer}
-.sb-tabs button[aria-pressed="true"]{background:var(--sb-surface-raised);color:var(--sb-fg);box-shadow:0 0 0 1px var(--sb-line)}
+.sb-tabs button[aria-pressed="true"]{background:var(--sb-surface-raised);color:var(--sb-fg);outline:1px solid var(--sb-line)}
 .sb-dots{display:inline-flex;gap:6px}
 .sb-dots i{width:5px;height:5px;border-radius:50%;background:var(--sb-line-strong)}
 .sb-dots i[aria-current]{background:var(--sb-accent)}
@@ -98,9 +99,10 @@
 .sb-readouts{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--sb-line);border:1px solid var(--sb-line)}
 .sb-readouts>div{background:var(--sb-surface);padding:12px 14px 14px;display:grid;gap:10px}
 .sb-readouts .k{display:flex;justify-content:space-between;font:var(--sb-type-micro);letter-spacing:var(--sb-track-micro);text-transform:uppercase;color:var(--sb-fg-2)}
-.sb-readouts .v{font:var(--sb-type-readout-sm);font-size:30px;white-space:nowrap}
+/* Dot numerals start at 72 px. Below that, figures are Geist Mono. */
+.sb-readouts .v{font:var(--sb-type-figure);font-size:30px;white-space:nowrap}
 .sb-readouts .v small{font:var(--sb-type-micro);letter-spacing:var(--sb-track-micro);color:var(--sb-fg-2);margin-left:6px;text-transform:uppercase}
-.sb-readouts [data-out]{box-shadow:inset 3px 0 0 var(--sb-accent)}
+.sb-readouts [data-out]{border-left:3px solid var(--sb-accent);padding-left:11px}
 .sb-board{width:100%;border-collapse:collapse;font:var(--sb-type-small)}
 .sb-board th{font:var(--sb-type-micro);letter-spacing:var(--sb-track-micro);text-transform:uppercase;color:var(--sb-fg-2);text-align:left;padding:0 12px 10px 0;border-bottom:1px solid var(--sb-fg);white-space:nowrap}
 .sb-board td{padding:11px 12px 11px 0;border-bottom:1px solid var(--sb-line);vertical-align:middle;white-space:nowrap}
@@ -108,17 +110,17 @@
 .sb-board .rank{font-family:var(--sb-font-mono);color:var(--sb-fg-2);width:34px}
 .sb-board .name b{font-weight:600}
 .sb-board .name span{color:var(--sb-fg-2);margin-left:8px;font:var(--sb-type-micro);letter-spacing:var(--sb-track-micro);text-transform:uppercase}
-.sb-board .rate{font:var(--sb-type-readout-sm);font-size:22px}
+.sb-board .rate{font:var(--sb-type-figure);font-size:22px}
 .sb-board svg{display:block}
 .sb-board tr[data-focus] td{background:var(--sb-accent-soft)}
 .sb-board tr[data-focus] .rate{color:var(--sb-accent-text)}
 /* Label strip: an accent block with the mark, then a strip of facts. */
-.sb-strip{display:inline-flex;align-items:stretch;height:44px;background:var(--sb-surface-raised);color:var(--sb-fg);box-shadow:var(--sb-shadow-card)}
+.sb-strip{display:inline-flex;align-items:stretch;height:44px;background:var(--sb-surface-raised);color:var(--sb-fg);border:1px solid var(--sb-line)}
 .sb-strip__mark{width:44px;display:grid;place-items:center;background:var(--sb-accent);color:var(--sb-accent-contrast)}
 .sb-strip__mark .sb-logo{height:24px}
 .sb-strip__mark .sb-logo__mark{fill:currentColor}
-.sb-strip__text{display:grid;align-content:center;gap:3px;padding:0 14px;font:700 10px/1 var(--sb-font-sans);letter-spacing:.04em;text-transform:uppercase}
-.sb-strip__text small{font:var(--sb-type-micro);font-size:8px;letter-spacing:.08em;color:var(--sb-fg-2)}
-/* Specimen stamp: goes on anything that shows sample data. */
+.sb-strip__text{display:grid;align-content:center;gap:4px;padding:0 14px;font:700 11px/1 var(--sb-font-sans);letter-spacing:.04em;text-transform:uppercase}
+.sb-strip__text small{font:var(--sb-type-micro);line-height:1;color:var(--sb-fg-2)}
+/* Status stamp: says what a piece is not yet (empty, provisional, in design). The kit ships no sample data. */
 .sb-specimen{display:inline-flex;align-items:center;gap:.6em;height:22px;padding:0 8px;border:1px dashed var(--sb-fg-2);font:var(--sb-type-micro);letter-spacing:var(--sb-track-micro);text-transform:uppercase;color:var(--sb-fg-2)}
 .sb-icon{display:inline-block;vertical-align:middle}

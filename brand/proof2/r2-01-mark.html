@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><title>SB-M-002. Mark, second round</title>
+<link rel="stylesheet" href="r2.css">
+<style>
+#sheet { width: 1600px; height: 2130px; }
+.hdr { position: absolute; left: 40px; right: 40px; top: 30px; display: grid; grid-template-columns: 250px 1fr 1fr 240px; }
+.hdr div:last-child { text-align: right; }
+h1 { position: absolute; left: 40px; top: 84px; font: 700 76px/1.02 var(--sans); letter-spacing: -.045em; width: 800px; }
+.lede { position: absolute; left: 890px; top: 96px; width: 670px; }
+.lede p + p { margin-top: 10px; }
+#tab { position: absolute; left: 40px; right: 40px; top: 300px; }
+.thead, .row { display: grid; grid-template-columns: 190px 270px 270px 210px 290px 1fr; column-gap: 20px; align-items: center; }
+.thead { height: 34px; border-bottom: 1.25px solid var(--fg); align-items: start; }
+.row { height: 176px; border-bottom: .5px solid var(--fg); }
+.row.ctl { background: var(--paper-3); }
+.row .big { padding-left: 14px; }
+.row h3 { font: 600 22px/1.1 var(--sans); letter-spacing: -.02em; margin: 4px 0 8px; }
+.row .note { font: 400 14px/1.4 var(--sans); color: var(--fg-2); }
+.sizes, .turn { display: flex; align-items: flex-end; gap: 16px; }
+.sizes span, .turn span { display: flex; flex-direction: column; align-items: center; gap: 8px; }
+.near { display: flex; align-items: flex-end; gap: 26px; }
+.near span { display: flex; flex-direction: column; align-items: flex-start; gap: 10px; }
+.near .none { font: 600 22px/1.15 var(--sans); letter-spacing: -.02em; align-self: center; width: 200px; }
+.tile { justify-self: end; width: 150px; height: 150px; display: grid; place-items: center; background: var(--ink); color: var(--on-ink); }
+#wm { position: absolute; left: 40px; right: 40px; top: 1420px; }
+.wrow { display: grid; grid-template-columns: 190px 1fr; column-gap: 20px; border-bottom: .5px solid var(--fg); padding: 18px 0 16px; align-items: center; }
+.wrow:first-child { border-top: 1.25px solid var(--fg); }
+.flex { display: flex; align-items: center; gap: 44px; flex-wrap: nowrap; }
+.lock { display: flex; align-items: center; gap: 13px; }
+.lock.s { gap: 7px; }
+</style></head>
+<body><div class="sheet" id="sheet">
+  <div class="hdr cap"><div><b>SpaceBench</b></div><div>Mark · second round</div><div>Five candidates and the control</div><div>Parent brand · one colour</div></div>
+  <h1>Five ways to cut one mark.</h1>
+  <div class="lede body">
+    <p>Round one's mark was an arrow touching a bar. Turned for Dock and Landing it read as two interface icons: skip to end, and download. Below 48 px its three cuts closed into one triangle.</p>
+    <p>Each candidate keeps the idea, a surveyor's bench mark: a level line and a broad arrow of three cuts. The fourth column gives the interface icons each one resembles when turned for Dock and Landing. That column is a reading by eye, not a measurement. The sizes beside it are drawn at true pixel size.</p>
+  </div>
+  <div id="tab"></div>
+  <div id="wm"></div>
+  <svg id="notes" class="abs" style="left:0;top:0" width="1600" height="2130"></svg>
+  <div id="tb"></div>
+</div>
+<script src="data/hershey.js"></script><script src="data/geist-outlines.js"></script><script src="r2.js"></script><script src="marks.js"></script>
+<script>
+(async function () {
+  var $ = function (i) { return document.getElementById(i); }, FG = '#0B0E16', G3 = '#7C8493';
+  /* eight common interface icons on a 24 grid, drawn the usual way */
+  var ICONS = {
+    'Align top': '<path d="M5 4h14M12 20V9M6 14l6-6 6 6" fill="none" stroke="#000" stroke-width="2.4"/>',
+    'Upload': '<path d="M4 17v3h16v-3M12 16V4M7 9l5-5 5 5" fill="none" stroke="#000" stroke-width="2.4"/>',
+    'Go to end': '<path d="M20 5v14M4 12h11M10 6l6 6-6 6" fill="none" stroke="#000" stroke-width="2.4"/>',
+    'Skip to end': '<path d="M4 5l11 7-11 7zM17.5 5h3v14h-3z" fill="#000"/>',
+    'Download': '<path d="M4 17v3h16v-3M12 4v12M7 11l5 5 5-5" fill="none" stroke="#000" stroke-width="2.4"/>',
+    'Play': '<path d="M6 4l14 8-14 8z" fill="#000"/>',
+    'Eject': '<path d="M12 4l8 10H4zM4 17h16v3H4z" fill="#000"/>',
+    'Send': '<path d="M3 4l18 8-18 8 4-8z" fill="#000"/>'
+  };
+  function icon(name, size, rot, col) {
+    return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="' + size + '" height="' + size + '"><g transform="rotate(' + (rot || 0) + ' 12 12)">' + ICONS[name].replace(/#000/g, col || '#000') + '</g></svg>';
+  }
+  /* my reading of each candidate when it is turned for Dock (90°) and Landing (180°). A judgement, not a measurement. */
+  var READS = { K0: [['Skip to end', 0], ['Download', 0]], A1: [['Skip to end', 0], ['Download', 0]], A2: [['Go to end', 0], ['Download', 0]], A3: [['Play', 0], ['Send', 0]], A4: [], A5: [] };
+
+  var ids = ['K0', 'A1', 'A2', 'A3', 'A4', 'A5'];
+  var h = '<div class="thead cap"><div>Candidate</div><div>What it is</div><div>At 16, 24, 32 and 48 px</div><div>Turned 90° and 180°</div><div>Reads as, when turned</div><div style="text-align:right">On ink</div></div>';
+  for (var n = 0; n < ids.length; n++) {
+    var id = ids[n], c = SBM.cands[id], rd = READS[id];
+    h += '<div class="row' + (id === 'K0' ? ' ctl' : '') + '"><div class="big">' + SBM.svg(id, { size: 132 }) + '</div>' +
+      '<div><div class="cap">' + (id === 'K0' ? 'Control' : 'Candidate ' + id) + '</div><h3>' + c.name + '</h3><div class="note">' + c.note + '</div></div>' +
+      '<div class="sizes">' + [16, 24, 32, 48].map(function (z) { return '<span>' + SBM.svg(id, { size: z }) + '<i class="cap" style="font-style:normal">' + z + '</i></span>'; }).join('') + '</div>' +
+      '<div class="turn">' + [90, 180].map(function (rt) { return '<span>' + SBM.svg(id, { size: 64, rot: rt }) + '<i class="cap" style="font-style:normal">' + rt + '°</i></span>'; }).join('') + '</div>' +
+      '<div class="near">' + (rd.length ? rd.map(function (q) { return '<span>' + icon(q[0], 44, q[1], FG) + '<i class="cap" style="font-style:normal">' + q[0] + '</i></span>'; }).join('') : '<div class="none">No common icon found.</div>') + '</div>' +
+      '<div class="tile">' + SBM.svg(id, { size: 92 }) + '</div></div>';
+  }
+  $('tab').innerHTML = h;
+
+  /* wordmark */
+  var two = function (size, cuts, wt) { return SB2.word([['Space', FG], ['Bench', G3]], { size: size, cuts: cuts, weight: wt || 800 }); };
+  var w = '';
+  w += '<div class="wrow"><div><div class="cap"><b>Wordmark</b><br>Display, 48 px and up</div><div class="note" style="font:400 14px/1.4 var(--sans);color:var(--fg-2);margin-top:8px">Three cuts, placed by hand where a bowl leaves its stem: p, a, B. Open letters are never cut.</div></div><div>' + two(196, true) + '</div></div>';
+  w += '<div class="wrow"><div><div class="cap"><b>Wordmark</b><br>Under 48 px</div><div class="note" style="font:400 14px/1.4 var(--sans);color:var(--fg-2);margin-top:8px">No cuts. Geist as drawn.</div></div><div class="flex">' + two(44, false, 700) + two(28, false, 700) + two(18, false, 600) + '</div></div>';
+  w += '<div class="wrow"><div><div class="cap"><b>Simulation names</b></div><div class="note" style="font:400 14px/1.4 var(--sans);color:var(--fg-2);margin-top:8px">Same rule. On a simulation\'s own pieces the name takes that simulation\'s colour. This sheet is the parent brand, so it stays in one colour.</div></div><div class="flex" style="gap:70px">' +
+    SB2.word([['Dock', FG]], { size: 120, cuts: true }) + SB2.word([['Landing', FG]], { size: 120, cuts: true }) + '</div></div>';
+  w += '<div class="wrow"><div><div class="cap"><b>Lockups</b><br>Each candidate, 34 and 18 px</div></div><div class="flex" style="gap:0;justify-content:space-between">' +
+    ['A1', 'A2', 'A3', 'A4', 'A5'].map(function (id) {
+      return '<div><div class="lock" style="gap:10px">' + SBM.svg(id, { size: 34 }) + two(31, false, 700) + '</div><div class="lock s" style="margin-top:16px">' + SBM.svg(id, { size: 18 }) + two(17, false, 600) + '<span class="cap" style="margin-left:10px">' + id + '</span></div></div>';
+    }).join('') + '</div></div>';
+  $('wm').innerHTML = w;
+
+  /* two plotter notes, both tested facts */
+  var rows = document.querySelectorAll('#tab .row'), sr = $('sheet').getBoundingClientRect();
+  var k0 = rows[0].getBoundingClientRect(), t0 = k0.top - sr.top;
+  var s = SB2.plot('the same shape as the icon', { x: 884, y: t0 + 26, size: 13 }) + '<path class="dim" style="stroke-width:1" d="M880 ' + (t0 + 30) + 'q-22 12 -16 36"/>';
+  $('notes').innerHTML = s;
+
+  $('tb').innerHTML = SB2.titleBlock([['Drawing', 'SB-M-002'], ['Title', 'Mark and wordmark, second round', 2], ['Type', 'Geist, Geist Mono', 1.4], ['Notes in', 'Hershey Roman Simplex', 1.4], ['Status', 'Proof. Not adopted', 1.3], ['Date', '2026-11-18']], 'left:40px;right:40px;bottom:34px');
+  await document.fonts.ready;
+  document.body.dataset.ready = '1';
+})();
+</script>
+</body></html>

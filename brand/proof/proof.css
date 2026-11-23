@@ -1,0 +1,38 @@
+/* Proof round. Trial tokens only: tinted neutrals, a hand, a stencil. Not part of the kit yet. */
+@font-face { font-family: "Geist"; src: url("../fonts/Geist-Variable.woff2") format("woff2"); font-weight: 100 900; }
+@font-face { font-family: "Geist Mono"; src: url("../fonts/GeistMono-Variable.woff2") format("woff2"); font-weight: 100 900; }
+@font-face { font-family: "SB Matrix"; src: url("../fonts/SBMatrix.woff2") format("woff2"); }
+@font-face { font-family: "SB Hand"; src: url("fonts/ReenieBeanie.ttf") format("truetype"); }
+
+:root {
+  --paper: #ECEEF1; --paper-2: #F6F7F9; --paper-3: #E1E4E9;
+  --line: #C6CBD4; --line-2: #A9B0BC;
+  --fg: #0B0E16; --fg-2: #454C5B; --fg-3: #7C8493;
+  --ink: #090C13; --ink-2: #111622; --ink-3: #1A2030; --ink-line: #283044; --ink-line-2: #3A435A;
+  --on-ink: #EEF0F4; --on-ink-2: #A9B0C0; --on-ink-3: #6B7387;
+  --violet: #6B3BFF; --violet-ink: #8E6BFF; --violet-soft: #E9E3FF; --violet-deep: #2D137A;
+  --orange: #FF5A0A;
+  --pen: #6B3BFF;
+  --sans: "Geist", Helvetica, Arial, sans-serif; --mono: "Geist Mono", ui-monospace, monospace; --matrix: "SB Matrix", monospace; --hand: "SB Hand", cursive;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; background: #888; }
+body { font-family: var(--sans); color: var(--fg); -webkit-font-smoothing: antialiased; }
+.sheet { position: relative; overflow: hidden; background: var(--paper); color: var(--fg); }
+.sheet.ink { background: var(--ink); color: var(--on-ink); }
+.sheet.violet { background: var(--violet); color: #fff; }
+.abs { position: absolute; }
+.mono { font: 500 11px/1.25 var(--mono); letter-spacing: .09em; text-transform: uppercase; }
+.mono.s { font-size: 9.5px; }
+.mono.l { font-size: 13px; }
+.dim { color: var(--fg-3); } .ink .dim { color: var(--on-ink-3); } .violet .dim { color: rgba(255,255,255,.62); }
+.mid { color: var(--fg-2); } .ink .mid { color: var(--on-ink-2); }
+.matrix { font-family: var(--matrix); line-height: 1; }
+.hand { font-family: var(--hand); color: var(--pen); line-height: .9; }
+.grain { position: absolute; inset: 0; background: url("img/grain.png"); background-size: 512px 512px; mix-blend-mode: overlay; opacity: .55; pointer-events: none; z-index: 50; }
+.ink .grain { mix-blend-mode: screen; opacity: .11; }
+.hair { background: var(--line); } .ink .hair { background: var(--ink-line); }
+.hdr { position: absolute; left: 40px; right: 40px; top: 28px; display: flex; justify-content: space-between; }
+.stamp { display: inline-block; border: 1px dashed currentColor; padding: 4px 7px 3px; font: 500 9.5px/1 var(--mono); letter-spacing: .1em; text-transform: uppercase; }
+h1, h2, p { margin: 0; }
+svg { display: block; }

@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><title>Proof 02. Cover</title>
+<link rel="stylesheet" href="proof.css">
+<style>
+#sheet { width: 1600px; height: 1000px; background: #090C13 url("img/limb-mono.jpg") 0 0 / 1600px 1000px no-repeat; color: var(--on-ink); }
+.lockup { left: 40px; top: 64px; display: flex; align-items: center; gap: 12px; }
+h1 { position: absolute; left: 40px; bottom: 92px; font: 700 104px/0.94 var(--sans); letter-spacing: -.05em; }
+h1 span { color: #6B7387; }
+.foot { position: absolute; left: 40px; right: 40px; bottom: 30px; display: flex; justify-content: space-between; align-items: flex-end; }
+.lab { position: absolute; }
+.lab i { position: absolute; background: var(--on-ink-3); }
+</style></head>
+<body><div class="sheet ink" id="sheet">
+  <div class="hdr mono"><span>SpaceBench · Brand standard</span><span class="dim">Proof No. 02 · Cover</span><span class="dim">02/09</span><span class="dim">Rev. B trial</span></div>
+  <div class="abs lockup" id="lock"></div>
+
+  <div class="abs" id="arrow" style="left:960px;top:489px"></div>
+  <div class="abs mono s" style="left:1128px;top:522px;line-height:2.1"><span class="dim">Datum</span> &nbsp;the horizon<br><span class="dim">Gap</span> &nbsp;&nbsp;&nbsp;the last 0.10 m<br><span class="dim">Arrow</span> &nbsp;the approach</div>
+
+  <h1><span>Every model gets</span><br>the same bench.</h1>
+  <div class="foot">
+    <div class="mono dim">A benchmark family for closed-loop spacecraft control by language models</div>
+    <div class="mono dim" style="text-align:right">Limb drawn by <span style="color:var(--on-ink)">gen/limb.py</span> · seed 7 · no photograph used</div>
+  </div>
+</div>
+<script src="proof.js"></script>
+<script>
+(async function () {
+  await document.fonts.load('800 100px Geist'); await document.fonts.load('700 100px Geist'); await document.fonts.ready;
+  var cv = document.createElement('canvas');
+  SBP.stencil(cv, 'SpaceBench', { size: 30, weight: 800, slot: 0.055, split: ['Space', '#EEF0F4', '#8A92A6'] });
+  var l = document.getElementById('lock'); l.innerHTML = SBP.mark({ size: 34, fg: '#EEF0F4' }); l.appendChild(cv);
+  /* the horizon is the bar: only the arrow is drawn, its point 0.5 module under the limb */
+  document.getElementById('arrow').innerHTML = '<svg width="160" height="160" viewBox="0 0 120 120" style="overflow:visible"><g fill="#EEF0F4">' +
+    SBP.MARK.wedges.map(function (w) { return '<polygon points="60,0 ' + w[0] + ',74 ' + w[1] + ',74"/>'; }).join('') + '</g></svg>';
+  document.body.dataset.ready = '1';
+})();
+</script>
+</body></html>
