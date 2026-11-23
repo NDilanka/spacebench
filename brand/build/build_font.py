@@ -22,7 +22,9 @@ def g(ch, rows):
     assert len(rows) == 7 and all(len(r) == 5 for r in rows), (ch, rows)
     G[ch] = rows
 
-g("0", ".###. #...# #..## #.#.# ##..# #...# .###.")
+# The zero is open. A slashed zero reads as an 8 in dots, and these numerals are only set at 72 px and up.
+g("0", ".###. #...# #...# #...# #...# #...# .###.")
+# The one is three dots wide, set in a cell of its own width (see CROPPED), so "0.10" has no hole after the 1.
 g("1", "..#.. .##.. ..#.. ..#.. ..#.. ..#.. .###.")
 g("2", ".###. #...# ....# ...#. ..#.. .#... #####")
 g("3", ".###. #...# ....# ..##. ....# #...# .###.")
@@ -111,8 +113,11 @@ def circle(pen, cx, cy, r):
     pen.curveTo((cx - r, cy + k), (cx - k, cy + r), (cx, cy + r))
     pen.closePath()
 
-# Punctuation sits in a cell only as wide as its lit columns, so "0.08" reads as one number.
+# Punctuation sits in a cell only as wide as its lit columns, one and a half pitches from its neighbours,
+# so "0.10" reads as one number.
 NARROW = set(".,:;'!|\u00b7")
+NARROW_X0 = 50
+CROPPED = set("1")
 SPACE_ADV = 300
 
 def columns(rows):
@@ -122,19 +127,20 @@ def columns(rows):
 def advance(ch):
     if ch == " ":
         return SPACE_ADV
-    if ch in NARROW:
+    if ch in NARROW or ch in CROPPED:
         c0, c1 = columns(G[ch])
-        return 2 * X0 + (c1 - c0) * PITCH
+        return 2 * (NARROW_X0 if ch in NARROW else X0) + (c1 - c0) * PITCH
     return ADV
 
-def draw(rows, narrow=False):
+def draw(rows, narrow=False, cropped=False):
     tt = TTGlyphPen(None)
     pen = Cu2QuPen(tt, max_err=0.5)
-    c0 = columns(rows)[0] if narrow else 0
+    c0 = columns(rows)[0] if narrow or cropped else 0
+    x0 = NARROW_X0 if narrow else X0
     for ri, row in enumerate(rows):
         for ci, c in enumerate(row):
             if c == "#":
-                circle(pen, X0 + (ci - c0) * PITCH, Y0 + (6 - ri) * PITCH, RADIUS)
+                circle(pen, x0 + (ci - c0) * PITCH, Y0 + (6 - ri) * PITCH, RADIUS)
     return tt.glyph()
 
 order = [".notdef"] + [glyph_name(c) for c in G]
@@ -142,7 +148,7 @@ glyphs = {".notdef": draw(G["\u25cb"])}
 cmap = {}
 for ch, rows in G.items():
     n = glyph_name(ch)
-    glyphs[n] = draw(rows, ch in NARROW)
+    glyphs[n] = draw(rows, ch in NARROW, ch in CROPPED)
     cmap[ord(ch)] = n
     if ch.isalpha() and ch.isupper():
         cmap[ord(ch.lower())] = n
@@ -155,16 +161,16 @@ fb.setupCharacterMap(cmap)
 fb.setupGlyf(glyphs)
 metrics = {".notdef": (ADV, 60)}
 for ch in G:
-    metrics[glyph_name(ch)] = (advance(ch), 0 if ch == " " else 60)
+    metrics[glyph_name(ch)] = (advance(ch), 0 if ch == " " else (NARROW_X0 if ch in NARROW else X0) - RADIUS)
 fb.setupHorizontalMetrics(metrics)
 fb.setupHorizontalHeader(ascent=800, descent=-200)
 fb.setupNameTable({
     "familyName": "SB Matrix",
     "styleName": "Regular",
-    "uniqueFontIdentifier": "SpaceBench: SB Matrix Regular 1.000",
+    "uniqueFontIdentifier": "SpaceBench: SB Matrix Regular 1.200",
     "fullName": "SB Matrix Regular",
     "psName": "SBMatrix-Regular",
-    "version": "Version 1.000",
+    "version": "Version 1.200",
     "designer": "SpaceBench",
     "copyright": "Copyright 2026 SpaceBench. Drawn for SpaceBench telemetry and score readouts.",
 })

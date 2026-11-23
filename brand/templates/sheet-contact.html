@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><title>SB-D-011. Contact figure</title>
+<link rel="stylesheet" href="../tokens/tokens.css">
+<link rel="stylesheet" href="../css/sheet.css">
+<style>
+#sheet { width: 1600px; height: 1290px; }
+.hdr { position: absolute; left: 48px; right: 48px; top: 40px; display: flex; justify-content: space-between; }
+h1 { position: absolute; left: 44px; top: 86px; font: 700 92px/.97 var(--sans); letter-spacing: -.05em; }
+#copy { position: absolute; left: 48px; top: 300px; width: 520px; font: 400 18px/1.45 var(--sans); color: var(--on-ink); }
+#copy p + p { margin-top: 12px; }
+#key { position: absolute; left: 48px; top: 486px; width: 520px; }
+#key .r { display: grid; grid-template-columns: 56px 1fr; align-items: center; padding: 11px 0; border-top: .5px solid var(--on-ink-3); font: 400 16px/1.35 var(--sans); }
+#key .r:last-child { border-bottom: .5px solid var(--on-ink-3); }
+#draw { position: absolute; left: 0; top: 0; }
+#field { position: absolute; left: 48px; top: 912px; }
+#field h2 { font: 700 30px/1.1 var(--sans); letter-spacing: -.03em; margin-bottom: 6px; }
+#glyph { position: absolute; left: 1010px; top: 912px; width: 542px; }
+#glyph h2 { font: 700 30px/1.1 var(--sans); letter-spacing: -.03em; margin-bottom: 6px; }
+#glyph .g { display: flex; align-items: flex-end; gap: 34px; margin-top: 22px; }
+#glyph .g span { display: flex; flex-direction: column; align-items: center; gap: 10px; }
+</style></head>
+<body><div class="sheet ink" id="sheet">
+  <svg id="draw" width="1600" height="1290"></svg>
+  <div class="hdr cap"><div><b style="color:var(--on-ink)">SpaceBench Dock</b></div><div>Contact figure</div><div>Empty: no flight has been flown</div></div>
+  <h1>Seven limits.<br>One figure.</h1>
+  <div id="copy">
+    <p>A flight docks only if it meets all seven contact conditions at the same moment. Each spoke is one condition, scaled so that its limit lies on the same circle.</p>
+    <p>One flight is one seven-cornered outline. If every corner is inside the circle, and the closing-speed corner is clear of the hatching, it docked.</p>
+  </div>
+  <div id="key"></div>
+  <div id="field"></div>
+  <div id="glyph"></div>
+  <div id="tb"></div>
+</div>
+<script src="../js/sb-hershey.js"></script><script src="../js/sb-draw.js"></script>
+<script>
+(function () {
+  var f = SBDraw.f, V = '#8E6BFF', FG = '#EEF0F4', G2 = '#A9B0C0', G3 = '#6B7387';
+  var L = [
+    ['Closing speed', '0.05 to 0.10 m/s'], ['Sideways speed', '0.04 m/s'], ['Pitch and yaw rate', '0.20 deg/s'], ['Roll rate', '0.20 deg/s'],
+    ['Roll misalignment', '4.0 deg'], ['Pitch and yaw misalignment', '4.0 deg'], ['Sideways misalignment', '0.10 m']
+  ];
+  function pol(cx, cy, r, i, n) { var a = (-90 + i * 360 / (n || 7)) * Math.PI / 180; return [cx + r * Math.cos(a), cy + r * Math.sin(a)]; }
+  function sector(cx, cy, r, i) {
+    var a0 = (-90 + (i - .5) * 360 / 7) * Math.PI / 180, a1 = (-90 + (i + .5) * 360 / 7) * Math.PI / 180;
+    return 'M' + f(cx) + ' ' + f(cy) + 'L' + f(cx + r * Math.cos(a0)) + ' ' + f(cy + r * Math.sin(a0)) + 'A' + f(r) + ' ' + f(r) + ' 0 0 1 ' + f(cx + r * Math.cos(a1)) + ' ' + f(cy + r * Math.sin(a1)) + 'Z';
+  }
+  /* the figure. R is the radius of the limit circle. detail: 2 full, 1 medium, 0 smallest */
+  function figure(cx, cy, R, detail, pid) {
+    var s = '';
+    if (detail === 2) {
+      s += '<circle cx="' + cx + '" cy="' + cy + '" r="' + f(R * 1.5) + '" fill="none" stroke="' + G3 + '" stroke-width=".6" stroke-dasharray="2 5"/>';
+      s += '<circle cx="' + cx + '" cy="' + cy + '" r="' + f(R * .5) + '" fill="none" stroke="' + G3 + '" stroke-width=".6"/>';
+    }
+    s += '<path d="' + sector(cx, cy, R * .5, 0) + '" fill="' + (detail === 2 ? 'url(#' + pid + ')' : V) + '" ' + (detail === 2 ? 'stroke="' + V + '" stroke-width=".8"' : 'opacity=".55"') + '/>';
+    for (var i = 0; i < 7; i++) {
+      var a = pol(cx, cy, detail === 2 ? R * 1.5 : R * 1.24, i), c = pol(cx, cy, detail === 2 ? 0 : R * .0, i);
+      if (detail > 0 || true) s += '<path d="M' + f(detail === 2 ? cx : pol(cx, cy, R * (detail ? .0 : .0), i)[0]) + ' ' + f(detail === 2 ? cy : pol(cx, cy, 0, i)[1]) + 'L' + f(a[0]) + ' ' + f(a[1]) + '" stroke="' + (detail === 2 ? G2 : FG) + '" stroke-width="' + (detail === 2 ? .6 : detail ? .8 : .7) + '"/>';
+      if (detail === 2) for (var t = 1; t <= 15; t++) {
+        var p = pol(cx, cy, R * t / 10, i), ang = (-90 + i * 360 / 7) * Math.PI / 180, len = t % 5 === 0 ? 7 : 3.5, nx = -Math.sin(ang), ny = Math.cos(ang);
+        s += '<path d="M' + f(p[0] - nx * len) + ' ' + f(p[1] - ny * len) + 'L' + f(p[0] + nx * len) + ' ' + f(p[1] + ny * len) + '" stroke="' + FG + '" stroke-width="' + (t % 5 === 0 ? 1.1 : .6) + '"/>';
+      }
+    }
+    s += '<circle cx="' + cx + '" cy="' + cy + '" r="' + f(R) + '" fill="none" stroke="' + V + '" stroke-width="' + (detail === 2 ? 3 : detail ? 2 : 1.6) + '"/>';
+    return s;
+  }
+  var cx = 1100, cy = 500, R = 226, s = '<defs><pattern id="hat" width="7" height="7" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><path d="M0 0V7" stroke="' + V + '" stroke-width="1.6"/></pattern></defs>';
+  s += figure(cx, cy, R, 2, 'hat');
+  L.forEach(function (l, i) {
+    var p = pol(cx, cy, R * 1.5 + 22, i), c = Math.cos((-90 + i * 360 / 7) * Math.PI / 180), an = c > .2 ? 'start' : c < -.2 ? 'end' : 'middle', dy = i === 0 ? -26 : (p[1] > cy + 100 ? 16 : 0);
+    s += '<text x="' + f(p[0]) + '" y="' + f(p[1] + dy) + '" text-anchor="' + an + '" font-family="Geist Mono" font-size="11" font-weight="500" letter-spacing=".8" fill="' + G2 + '">' + l[0].toUpperCase() + '</text>';
+    s += '<text x="' + f(p[0]) + '" y="' + f(p[1] + dy + 21) + '" text-anchor="' + an + '" font-family="Geist Mono" font-size="17" font-weight="600" fill="' + FG + '">' + l[1] + '</text>';
+  });
+  /* plotter notes with leaders */
+  var w0 = pol(cx, cy, R * .3, 0);
+  s += SBDraw.plot('too gentle is also a fail', { x: 596, y: 226, size: 14, color: V, sw: 1.15 });
+  s += '<path d="M882 220C980 214 1040 300 ' + f(w0[0] - 14) + ' ' + f(w0[1]) + '" fill="none" stroke="' + V + '" stroke-width="1"/><circle cx="' + f(w0[0] - 14) + '" cy="' + f(w0[1]) + '" r="2.6" fill="' + V + '"/>';
+  var lim = pol(cx, cy, R, 4.5);
+  s += SBDraw.plot('the limit, for all seven', { x: 624, y: 806, size: 14, color: V, sw: 1.15 });
+  s += '<path d="M756 780C770 700 850 660 ' + f(lim[0] - 8) + ' ' + f(lim[1] + 4) + '" fill="none" stroke="' + V + '" stroke-width="1"/><circle cx="' + f(lim[0] - 8) + '" cy="' + f(lim[1] + 4) + '" r="2.6" fill="' + V + '"/>';
+  document.getElementById('draw').innerHTML = s;
+
+  /* key */
+  function sw(inner) { return '<svg width="40" height="26" viewBox="0 0 40 26">' + inner + '</svg>'; }
+  document.getElementById('key').innerHTML =
+    '<div class="r">' + sw('<path d="M2 22A30 30 0 0 1 38 22" fill="none" stroke="' + V + '" stroke-width="3"/>') + '<span>The circle is every limit at once. Inside is within the limit.</span></div>' +
+    '<div class="r">' + sw('<defs><pattern id="h2" width="7" height="7" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><path d="M0 0V7" stroke="' + V + '" stroke-width="1.6"/></pattern></defs><rect x="2" y="3" width="34" height="20" fill="url(#h2)" stroke="' + V + '" stroke-width=".8"/>') + '<span>Closing speed is the one limit with a floor. Under 0.05 m/s is hatched.</span></div>' +
+    '<div class="r">' + sw('<path d="M2 13H38M8 9v8M14 11v4M20 9v8M26 11v4M32 9v8" stroke="' + FG + '" stroke-width="1"/>') + '<span>Each small tick is a tenth of that spoke\'s limit. The thin ring is half the limit; the dotted ring is one and a half times it.</span></div>';
+
+  /* seed field: 6 tiers by 30 hidden seeds, all empty */
+  var tiers = ['1 Aligned', '2 Six-axis offset', '3 Noise, fuel limit', '4 Stuck thruster', '5 Several failures', '6 Tumbling target'];
+  var fs = '', px = 22, py = 24, lx = 196;
+  tiers.forEach(function (t, r) {
+    fs += '<text x="0" y="' + (r * py + 16) + '" font-family="Geist Mono" font-size="11" font-weight="500" letter-spacing=".8" fill="' + G2 + '">' + t.toUpperCase() + '</text>';
+    for (var c = 0; c < 30; c++) fs += '<circle cx="' + (lx + c * px + 7) + '" cy="' + (r * py + 12) + '" r="6.5" fill="none" stroke="' + FG + '" stroke-width="1"/>';
+  });
+  var ly = 6 * py + 26;
+  function leg(x, glyph, label) { return '<g transform="translate(' + x + ' ' + ly + ')">' + glyph + '<text x="22" y="4" font-family="Geist Mono" font-size="11" font-weight="500" letter-spacing=".8" fill="' + G2 + '">' + label + '</text></g>'; }
+  fs += leg(0, '<circle cx="7" cy="0" r="6.5" fill="none" stroke="' + FG + '"/>', 'NOT FLOWN') +
+    leg(150, '<circle cx="7" cy="0" r="7.5" fill="' + V + '"/>', 'DOCKED') +
+    leg(270, '<circle cx="7" cy="0" r="6.5" fill="none" stroke="' + G3 + '"/><path d="M7 -6.5A6.5 6.5 0 0 1 12.6 3.25" fill="none" stroke="' + FG + '" stroke-width="2.6"/>', 'FAILED, REACHED THE 250 M HOLD') +
+    leg(560, '<path d="M1.5 -5.5l11 11m0 -11l-11 11" stroke="' + FG + '" stroke-width="1.6"/>', 'COLLISION');
+  document.getElementById('field').innerHTML = '<h2>One leaderboard row is 180 flights.</h2><div class="cap" style="margin-bottom:18px">6 tiers × 30 hidden seeds. None flown yet.</div><svg width="870" height="' + (ly + 14) + '" viewBox="0 -4 870 ' + (ly + 18) + '">' + fs + '</svg>';
+
+  /* the figure as a glyph */
+  function mini(size, detail) { return '<svg width="' + size + '" height="' + size + '" viewBox="0 0 ' + size + ' ' + size + '">' + figure(size / 2, size / 2, size * .36, detail) + '</svg>'; }
+  document.getElementById('glyph').innerHTML = '<h2>The same figure, small.</h2><div class="cap">Beside each leaderboard row, once there are flights</div><div class="g">' +
+    [[132, 1], [64, 1], [36, 0], [24, 0]].map(function (z) { return '<span>' + mini(z[0], z[1]) + '<i class="cap" style="font-style:normal">' + z[0] + ' px</i></span>'; }).join('') + '</div>';
+
+  document.getElementById('tb').innerHTML = SBDraw.titleBlock([['Drawing', 'SB-D-011'], ['Title', 'Contact figure', 1.3], ['Scale', 'Each spoke: its own limit = 1', 1.8], ['Source', 'IDSS IDD Rev F, table 3.3.1.1-2', 2], ['Data', 'None. No flights exist', 1.5], ['Date', '2026-11-18']], 'left:48px;right:48px;bottom:40px');
+  document.fonts.ready.then(function () { document.body.dataset.ready = '1'; });
+})();
+</script>
+</body></html>

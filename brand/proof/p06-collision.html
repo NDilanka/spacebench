@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><title>Proof 06. Slow collision</title>
+<link rel="stylesheet" href="proof.css">
+<style>
+.sheet { width: 1080px; height: 1350px; }
+#giant { position: absolute; left: -330px; top: -170px; color: #DCE0E6; }
+h1 { position: absolute; left: 40px; top: 300px; font: 800 132px/0.9 var(--sans); letter-spacing: -.055em; z-index: 3; }
+h1 { isolation: isolate; }
+h1 b { font-weight: 800; color: #fff; padding: 0 .1em 0 .08em; margin-left: -.08em; position: relative; }
+h1 b::before { content: ""; position: absolute; left: 0; right: 0; top: .1em; bottom: .02em; background: var(--violet); z-index: -1; }
+.read { position: absolute; left: 40px; top: 760px; z-index: 3; }
+.spec { position: absolute; left: 40px; right: 40px; bottom: 86px; z-index: 3; }
+.spec div { display: flex; border-top: 1px solid var(--fg); padding: 9px 0 8px; font: 400 17px/1.25 var(--sans); }
+.spec div b { width: 250px; flex: none; font: 600 10.5px/1.7 var(--mono); letter-spacing: .09em; text-transform: uppercase; }
+.spec div span { margin-left: auto; text-align: right; }
+.foot { position: absolute; left: 40px; right: 40px; bottom: 30px; display: flex; justify-content: space-between; z-index: 3; }
+.spine { position: absolute; left: 1046px; top: 1290px; transform-origin: left top; transform: rotate(-90deg); white-space: nowrap; z-index: 3; }
+</style></head>
+<body><div class="sheet" id="sheet">
+  <div id="giant"></div>
+  <div class="hdr mono" style="z-index:3"><span>SpaceBench Dock</span><span class="dim">Proof No. 06 · Fact poster</span><span class="dim">06/09</span><span class="dim">Bench note 01</span></div>
+  <h1>Docking<br>is a <b>slow</b><br>collision.</h1>
+  <div class="read"><div class="mono" style="margin-bottom:16px">Fastest closing speed allowed, m/s</div><div id="big"></div></div>
+  <div class="spec">
+    <div><b>Fastest allowed</b>0.10 m/s<span>Ten centimetres each second.</span></div>
+    <div><b>Slowest allowed</b>0.05 m/s<span>Too gentle is also a fail.</span></div>
+    <div><b>Ten metres at that speed</b>1 min 40 s<span>Nothing about this is quick.</span></div>
+    <div style="border-bottom:1px solid var(--fg)"><b>Second attempts</b>None<span>The headline is one try.</span></div>
+  </div>
+  <div class="foot mono s dim"><span>* Every number on this page comes from the pass rule. None of them is a result.</span><span>IDSS IDD Rev F · Table 3.3.1.1-2</span></div>
+  <div class="grain" style="opacity:.2"></div>
+</div>
+<script src="proof.js"></script>
+<script>
+(async function () {
+  await document.fonts.load('800 100px Geist'); await document.fonts.ready;
+  document.getElementById('giant').innerHTML = SBP.mark({ size: 1740 });
+  document.getElementById('big').innerHTML = SBP.dots('0.10', { pitch: 36, fg: '#0B0E16', ghost: 0.3 });
+  document.body.dataset.ready = '1';
+})();
+</script>
+</body></html>

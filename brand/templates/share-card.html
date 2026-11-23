@@ -7,41 +7,29 @@
 <link rel="stylesheet" href="../css/brand.css">
 <link rel="stylesheet" href="templates.css">
 <script src="../js/sb-logo.js"></script>
-<script src="../js/sb-graphics.js"></script>
 <script src="template.js"></script>
 </head>
-<body class="sb t t-og">
-<!-- 1200 x 630. Variants: ?sim=parent|dock|landing&theme=light|dark -->
-<div class="limb" id="limb"></div>
-<div class="sb-meta sb-meta--rule" style="position:relative"><span id="m1"></span><span id="m2"></span><span id="m3"></span></div>
-<div class="main grow">
-  <div><span class="lk" data-sb-logo="lockup" data-follow-sim></span><h1 id="h"></h1><p id="p"></p></div>
-  <div class="fig" id="fig"></div>
+<body class="sb t t-plume t-og">
+<!-- 1200 x 630. Variants: ?sim=parent|dock|landing&theme=light|dark. An identity piece: it sits on the plume field and carries no data. -->
+<img class="ground" id="ground" alt="">
+<div class="plate" id="art"></div>
+<div class="txt">
+  <span data-sb-logo="wordmark" data-follow-sim></span>
+  <h1 id="h"></h1>
+  <p id="p"></p>
 </div>
-<div class="foot" style="position:relative"><div id="sig"></div><span id="stamp"></span></div>
+<div class="meta" id="m"></div>
 <script>
 (function () {
-  var P = SBParams, G = SBGraphics, $ = function (i) { return document.getElementById(i); };
+  var P = SBParams, dark = P.theme === 'dark', $ = function (i) { return document.getElementById(i); };
   var V = {
-    parent: { m: ['SpaceBench', 'Benchmark family', 'Language models, spacecraft, closed loop'], h: 'Models fly. <span class="sb-tone">Physics scores.</span>', p: 'A benchmark family for closed-loop spacecraft control by language models.' },
-    dock: { m: ['SpaceBench Dock', 'Simulation 01', 'Six tiers · 30 hidden seeds each'], h: 'Six axes. <span class="sb-tone">One attempt.</span>', p: 'Dock a capsule to a station by hand, through thruster pulses and coasts. Scored at first contact.' },
-    landing: { m: ['SpaceBench Landing', 'Simulation 02', 'In design'], h: 'The pad <span class="sb-tone">is next.</span>', p: 'Booster landing is the second simulation under the same harness.' }
+    parent: { h: 'Models fly.<br>Physics scores.', p: 'A benchmark family for closed-loop spacecraft control by language models.', m: 'Benchmark family' },
+    dock: { h: 'Six axes.<br>One attempt.', p: 'Dock a capsule to a station by hand, through thruster pulses and coasts. Scored at first contact.', m: 'Simulation 01 · In build' },
+    landing: { h: 'The pad<br>is next.', p: 'Booster landing is the second simulation under the same harness.', m: 'Simulation 02 · In design' }
   }[P.sim];
-  $('m1').textContent = V.m[0]; $('m2').textContent = V.m[1]; $('m3').textContent = V.m[2];
-  $('h').innerHTML = V.h; $('p').textContent = V.p;
-  if (P.sim === 'dock') {
-    $('fig').innerHTML = G.approachChart(G.specimenFlight(421, 3), { width: 450, height: 250 });
-    $('sig').innerHTML = G.flightSignature(G.specimenFlight(421, 3), { width: 900, height: 44, labels: false });
-    $('stamp').innerHTML = '<span class="sb-specimen">Specimen flight. Tier 3, seed 0421</span>';
-  } else if (P.sim === 'landing') {
-    $('fig').className = 'fig dot'; $('fig').innerHTML = G.dotMark('landing', { cells: 24 });
-    $('stamp').innerHTML = '<span class="sb-chip sb-chip--soft">In design</span>';
-  } else if (P.theme === 'dark') {
-    $('limb').innerHTML = G.limb({ width: 1200, height: 200, count: 3000, top: 60, radius: 2600, seed: 421 });
-    document.querySelector('.main').style.paddingBottom = '150px';
-  } else {
-    $('fig').innerHTML = G.approachArcs({ width: 560, height: 300 });
-  }
+  $('ground').src = '../textures/plume-sheet-' + (dark ? 'ink' : 'film') + '.jpg';
+  $('art').innerHTML = SBPlate(P.sim, { dark: dark, size: 336, bare: true, base: '../textures/plume-square' });
+  $('h').innerHTML = V.h; $('p').textContent = V.p; $('m').textContent = V.m;
   P.done();
 })();
 </script>

@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><title>Proof 03. Approach plate D-4</title>
+<link rel="stylesheet" href="proof.css">
+<style>
+.sheet { width: 1200px; height: 1640px; }
+h1 { position: absolute; left: 40px; top: 96px; font: 700 68px/0.95 var(--sans); letter-spacing: -.05em; }
+h1 span { color: var(--fg-3); }
+#no { position: absolute; right: 34px; top: 58px; }
+.brief { position: absolute; left: 40px; right: 40px; top: 262px; height: 62px; display: flex; border: 1px solid var(--fg); }
+.brief > div { flex: 1; padding: 9px 12px; border-right: 1px solid var(--fg); }
+.brief > div:last-child { border: 0; }
+.brief b { display: block; font: 600 18px/1 var(--mono); margin-top: 9px; letter-spacing: -.02em; white-space: nowrap; text-transform: none; }
+.frame { position: absolute; left: 40px; width: 1120px; border: 1px solid var(--fg); background: var(--paper-2); }
+.frame > .cap { position: absolute; left: 12px; top: 10px; }
+.stack { position: absolute; right: -14px; bottom: -22px; width: 190px; z-index: 5; }
+.stack div { padding: 7px 10px 6px; font: 500 10px/1 var(--mono); letter-spacing: .1em; text-transform: uppercase; }
+.stack div:nth-child(1) { background: #fff; color: var(--fg); border: 1px solid var(--fg); border-bottom: 0; }
+.stack div:nth-child(2) { background: var(--violet); color: #fff; }
+.stack div:nth-child(3) { background: var(--fg); color: var(--paper); }
+table { border-collapse: collapse; width: 100%; }
+td, th { border-bottom: 1px solid var(--line); padding: 8px 0 7px; text-align: left; font: 400 14px/1.2 var(--sans); }
+th { font: 500 9.5px/1.2 var(--mono); letter-spacing: .09em; text-transform: uppercase; color: var(--fg-3); border-bottom-color: var(--fg); }
+td.n { font: 500 13px/1.2 var(--mono); }
+.notes { position: absolute; left: 760px; top: 1296px; width: 400px; }
+.notes div { display: flex; border-bottom: 1px solid var(--line); padding: 8px 0 7px; font: 400 14px/1.3 var(--sans); }
+.notes div b { flex: none; width: 132px; font: 600 9.5px/1.5 var(--mono); letter-spacing: .09em; text-transform: uppercase; }
+.foot { position: absolute; left: 40px; right: 40px; bottom: 28px; display: flex; justify-content: space-between; align-items: flex-end; }
+</style></head>
+<body><div class="sheet" id="sheet">
+  <div class="hdr mono"><span>SpaceBench Dock · Approach plates</span><span class="dim">Proof No. 03</span><span class="dim">03/09</span><span class="dim">Plate 4 of 6</span></div>
+  <h1>Tier 4.<br><span>One thruster sticks.</span></h1>
+  <canvas id="no"></canvas>
+  <div class="brief mono s">
+    <div><span class="dim">Start</span><b>400 m</b></div><div><span class="dim">Keep-out sphere</span><b>200 m</b></div><div><span class="dim">Holds</span><b>250 / 30 / 10 m</b></div>
+    <div><span class="dim">Thrusters</span><b>16 × 400 N</b></div><div><span class="dim">Shortest pulse</span><b>0.035 s</b></div><div><span class="dim">Attempts</span><b>1</b></div>
+  </div>
+  <div class="frame" style="top:344px;height:560px"><span class="cap mono s" style="left:auto;right:200px">Plan · seen from above</span><svg id="plan" width="1120" height="560" fill="none"></svg>
+    <div class="stack"><div>Plan view</div><div>D-4 · Stuck thruster</div><div>Not to scale</div></div></div>
+  <div class="frame" style="top:940px;height:300px;background:none"><span class="cap mono s">Profile · range against time</span><svg id="prof" width="1120" height="300" fill="none" style="overflow:visible"></svg></div>
+  <div class="abs" style="left:40px;top:1272px;width:680px"><div class="mono s" style="margin-bottom:8px">Contact minima</div><table id="min"></table></div>
+  <div class="notes"><div class="mono s" style="border:0;padding:0 0 8px;display:block">Briefing</div>
+    <div style="border-top:1px solid var(--fg)"><b>Missed approach</b><span>There is none. One attempt.</span></div>
+    <div><b>Clock</b><span>Stopped while the pilot thinks.</span></div>
+    <div><b>Pilot</b><span>Any. Models and people fly the same plate.</span></div>
+    <div><b>Ends in failure</b><span>Collision, leaving the corridor, fuel out, time out.</span></div>
+  </div>
+  <svg class="abs" id="pen" width="1200" height="1600" style="left:0;top:0;z-index:6"></svg>
+  <div id="hands"></div>
+  <div class="foot"><div class="mono s dim" id="prov"></div><div class="mono s" style="text-align:right"><span class="stamp">Specimen · not a result</span>&nbsp;&nbsp;Not for navigation</div></div>
+  <div class="grain" style="opacity:.16"></div>
+</div>
+<script src="proof.js"></script>
+<script>
+(async function () {
+  await document.fonts.load('800 100px Geist'); await document.fonts.load('40px "SB Hand"'); await document.fonts.ready;
+  var f = SBP.f, F = SBP.flight(17, 4), $ = function (id) { return document.getElementById(id); };
+  var fg = '#0B0E16', dim = '#7C8493', line = '#A9B0BC', vio = '#6B3BFF';
+  function t(x, y, s, o) { o = o || {}; return '<text x="' + f(x) + '" y="' + f(y) + '" font-family="Geist Mono" font-size="' + (o.size || 9.5) + '" font-weight="500" letter-spacing=".8" fill="' + (o.fill || dim) + '" text-anchor="' + (o.anchor || 'start') + '"' + (o.rot ? ' transform="rotate(' + o.rot + ' ' + f(x) + ' ' + f(y) + ')"' : '') + '>' + s + '</text>'; }
+  SBP.stencil($('no'), 'D-4', { size: 190, weight: 800, slot: 0.05, color: fg });
+
+  /* ---- plan: a sector. The port is the pivot. Radius is range on a log scale. ---- */
+  var PX = 960, PY = 290, HA = 15 * Math.PI / 180, EX = 3;
+  function R(rg) { return 46 + 850 * Math.log(1 + rg / 4) / Math.log(101); }
+  function pt(rg, a) { return [PX - R(rg) * Math.cos(a), PY + R(rg) * Math.sin(a)]; }
+  function arc(rg, a0, a1) { var p0 = pt(rg, a0), p1 = pt(rg, a1); return 'M' + f(p0[0]) + ' ' + f(p0[1]) + 'A' + f(R(rg)) + ' ' + f(R(rg)) + ' 0 0 0 ' + f(p1[0]) + ' ' + f(p1[1]); }
+  var s = '';
+  s += '<path d="M' + f(PX) + ' ' + f(PY) + 'L' + pt(400, -HA).map(f).join(' ') + arc(400, -HA, HA).replace('M', 'L').replace(/^L[^A]+/, '') + 'Z" fill="#fff"/>';
+  [1, 2, 5, 20, 50, 100].forEach(function (r) { s += '<path d="' + arc(r, -HA, HA) + '" stroke="' + line + '" stroke-width=".6" opacity=".7"/>'; });
+  [10, 30, 250, 400].forEach(function (r) { s += '<path d="' + arc(r, -HA, HA) + '" stroke="' + fg + '" stroke-width="1"/>'; var p = pt(r, -HA); s += t(p[0] + 6, p[1] - 9, (r === 400 ? 'START ' : 'HOLD ') + r + ' M', { fill: fg }); });
+  s += '<path d="' + arc(200, -HA, HA + 0.035) + '" stroke="' + fg + '" stroke-width="1.6" stroke-dasharray="9 5"/>';
+  var k = pt(200, HA + 0.035); s += t(k[0] + 6, k[1] + 14, 'KEEP-OUT SPHERE 200 M', { fill: fg });
+  [-HA, HA].forEach(function (a) { var p = pt(400, a), q = pt(520, a); s += '<path d="M' + f(PX) + ' ' + f(PY) + 'L' + f(p[0]) + ' ' + f(p[1]) + '" stroke="' + fg + '"/><path d="M' + f(p[0]) + ' ' + f(p[1]) + 'L' + f(q[0]) + ' ' + f(q[1]) + '" stroke="' + fg + '" stroke-dasharray="2 4"/>'; });
+  s += '<path d="M-10 ' + PY + 'H1130" stroke="' + dim + '" stroke-width=".8" stroke-dasharray="18 4 3 4"/>';
+  [1, 2, 5, 20, 50, 100].forEach(function (r) { var p = pt(r, 0); s += '<path d="M' + f(p[0]) + ' ' + (PY - 4) + 'v8" stroke="' + dim + '"/>' + t(p[0], PY + 18, r, { anchor: 'middle', size: 8.5 }); });
+  /* the station, cut by the edge of the plate, and the port */
+  s += '<rect x="' + (PX + 26) + '" y="' + (PY - 150) + '" width="140" height="300" rx="26" fill="' + fg + '"/><rect x="' + (PX + 10) + '" y="' + (PY - 34) + '" width="18" height="68" fill="' + fg + '"/><rect x="' + PX + '" y="' + (PY - 26) + '" width="10" height="52" fill="none" stroke="' + fg + '" stroke-width="1.4"/>';
+  s += t(PX + 86, PY + 4, 'STATION', { fill: '#ECEEF1', anchor: 'middle', size: 10 }) + t(PX - 6, PY - 36, 'PORT', { fill: fg, anchor: 'end' });
+  /* the flight */
+  var d = '', dots = '', stuckPt = null;
+  F.steps.forEach(function (st, i) {
+    var a = HA * 0.9 * Math.tanh(st.y / Math.max(st.range, 1) * EX / (HA * 0.9)), p = pt(st.range, a);
+    d += (i ? 'L' : 'M') + f(p[0]) + ' ' + f(p[1]);
+    dots += '<circle cx="' + f(p[0]) + '" cy="' + f(p[1]) + '" r="1.7" fill="' + fg + '"/>';
+    if (F.stuck && !stuckPt && st.t >= F.stuck.from) stuckPt = p;
+  });
+  s += '<path d="' + d + 'L' + PX + ' ' + PY + '" stroke="' + fg + '" stroke-width="1.5" stroke-linejoin="round"/>' + dots;
+  if (stuckPt) s += '<circle cx="' + f(stuckPt[0]) + '" cy="' + f(stuckPt[1]) + '" r="5.5" fill="' + vio + '"/>';
+  s += t(12, 548, 'RANGE ON A LOG SCALE · SIDEWAYS OFFSET DRAWN AT 3× · CORRIDOR ANGLE SCHEMATIC, NOT YET FIXED', { size: 8.5 }) ;
+  $('plan').innerHTML = s;
+
+  /* ---- profile ---- */
+  var W = 1120, H = 300, x0 = 70, x1 = W - 26, y0 = 40, y1 = H - 44, T = F.T;
+  function X(tt) { return x0 + (x1 - x0) * tt / T; }
+  function Y(rg) { return y1 - (y1 - y0) * Math.log(1 + rg / 2) / Math.log(201); }
+  s = '';
+  [400, 250, 30, 10, 0].forEach(function (r) { s += '<path d="M' + x0 + ' ' + f(Y(r)) + 'H' + x1 + '" stroke="' + (r === 0 ? fg : line) + '" stroke-width="' + (r === 0 ? 1.4 : .8) + '"' + (r && r < 400 ? ' stroke-dasharray="3 4"' : '') + '/>' + t(x0 - 8, Y(r) + 3, r + ' M', { anchor: 'end', fill: fg }); });
+  s += '<path d="M' + x0 + ' ' + f(Y(200)) + 'H' + x1 + '" stroke="' + fg + '" stroke-width="1.2" stroke-dasharray="9 5" opacity=".55"/>';
+  d = ''; for (var i = 0; i <= 400; i++) { var tt = T * i / 400; d += (i ? 'L' : 'M') + f(X(tt)) + ' ' + f(Y(F.rangeAt(tt))); }
+  s += '<path d="' + d + '" stroke="' + fg + '" stroke-width="2" stroke-linejoin="round"/>';
+  F.steps.forEach(function (st) { s += '<path d="M' + f(X(st.t)) + ' ' + (y1 + 8) + 'v' + (st.pulses.length ? 10 : 5) + '" stroke="' + fg + '" stroke-width="1"/>'; });
+  s += t(x0, y1 + 34, 'T+00:00') + t(x1, y1 + 34, SBP.fmtT(T), { anchor: 'end' }) + t((x0 + x1) / 2, y1 + 34, F.steps.length + ' DECISIONS · LONG TICK = THRUSTERS FIRED · SHORT TICK = COAST ONLY', { anchor: 'middle' });
+  F.holds.forEach(function (h, i) { s += '<circle cx="' + f(X(h)) + '" cy="' + f(Y(SBP.HOLDS[i])) + '" r="4" fill="#ECEEF1" stroke="' + fg + '" stroke-width="1.5"/>'; });
+  var sx = F.stuck ? X(F.stuck.from) : 0;
+  if (F.stuck) s += '<path d="M' + f(sx) + ' ' + y0 + 'V' + (y1 + 20) + '" stroke="' + vio + '" stroke-width="1.5"/><circle cx="' + f(sx) + '" cy="' + f(Y(F.rangeAt(F.stuck.from))) + '" r="5.5" fill="' + vio + '"/>' + t(sx + 7, y0 + 4, 'THRUSTER 15 STICKS OPEN · ' + SBP.fmtT(F.stuck.from), { fill: vio });
+  /* tape over the final 10 m */
+  var tx = X(F.holds[2]);
+  s += '<g transform="rotate(-1.2 ' + f(tx) + ' 150)"><rect x="' + f(tx) + '" y="' + f(Y(10) - 6) + '" width="' + f(x1 - tx + 40) + '" height="' + f(y1 - Y(10) + 12) + '" fill="' + vio + '" opacity=".8" style="mix-blend-mode:multiply"/>' + t(x1 + 30, Y(10) + 10, 'FINAL 10 M', { fill: '#fff', size: 10, anchor: 'end' }) + '</g>';
+  $('prof').innerHTML = s;
+
+  /* ---- minima ---- */
+  var rows = '<tr><th style="width:44%">At first contact</th><th>Limit</th><th>This flight</th><th style="width:60px"></th></tr>', marks = '';
+  SBP.LIMITS.forEach(function (l, i) {
+    var v = F.contact[l.key], ok = v <= l.max && (l.min == null || v >= l.min), y = 1272 + 66 + i * 32.6;
+    rows += '<tr><td>' + l.label + '</td><td class="n">' + l.text + '</td><td class="n">' + v.toFixed(l.max >= 1 ? 1 : 3) + ' ' + l.unit.replace('deg', '°') + '</td><td></td></tr>';
+    marks += ok ? SBP.pen.tick(668, y - 4, 17, i, { c: vio, w: 2.2 }) : SBP.pen.line(666, y - 12, 684, y + 5, i, { c: vio, w: 2.2, bow: 0 }) + SBP.pen.line(684, y - 12, 666, y + 5, i + 9, { c: vio, w: 2.2, bow: 0 }) + SBP.pen.ring(580, y - 5, 54, 14, i + 3, { c: vio });
+  });
+  $('min').innerHTML = rows;
+  /* ---- hand ---- */
+  var hp = '', hh = '';
+  if (stuckPt) {
+    var ax = 40 + stuckPt[0], ay = 344 + stuckPt[1];
+    hp += SBP.pen.ring(ax, ay, 22, 19, 4, { c: vio }) + SBP.pen.line(ax + 70, ay + 104, ax + 14, ay + 22, 6, { c: vio, arrow: true, bow: 0.12 });
+    hh += '<div class="abs hand" style="left:' + (ax + 40) + 'px;top:' + (ay + 100) + 'px;font-size:38px;width:300px;color:' + vio + ';z-index:7">it drifts from here.<br>stop trusting +Y.</div>';
+  }
+  var h10 = [40 + X(F.holds[2]), 940 + Y(10)];
+  hp += SBP.pen.line(h10[0] - 96, h10[1] + 34, h10[0] - 12, h10[1] + 8, 8, { c: vio, arrow: true, bow: -0.1 });
+  hh += '<div class="abs hand" style="left:' + (h10[0] - 440) + 'px;top:' + (h10[1] + 14) + 'px;font-size:38px;color:' + vio + ';z-index:7">rates under 0.2 before you go</div>';
+  hp += marks + SBP.pen.line(40, 252, 448, 249, 12, { c: vio, bow: 0.004, w: 2.4 });
+  $('pen').innerHTML = hp; $('hands').innerHTML = hh;
+  $('prov').innerHTML = 'Bracket <span style="color:' + fg + '">' + F.bracket + '</span> · Seed 0017 · ' + F.steps.length + ' decisions · State hash ' + F.hash + '<br>Pass rule: IDSS IDD Rev F, table 3.3.1.1-2. The standard\'s design conditions, not Dragon flight limits.';
+  document.body.dataset.ready = '1';
+})();
+</script>
+</body></html>
